@@ -13,7 +13,7 @@ exports.register = async (req, res, next) => {
         if (!errors.isEmpty()) {
             return next(createError(400, errors.array()[0].msg));
         }
-        const { fullName, email, password, phoneNumber } = req.body;
+        const { userName, email, password, phoneNumber } = req.body;
         const user = await User.findOne({ email });
         if (user) {
             return next(createError(400, "User already exists"));
@@ -21,7 +21,7 @@ exports.register = async (req, res, next) => {
         const salt = await bcrypt.genSalt(10);
         const hash = await bcrypt.hash(password, salt);
         const newUser = new User({
-            fullName,
+            userName,
             email,
             password: hash,
             phoneNumber
