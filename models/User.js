@@ -1,0 +1,90 @@
+const mongoose = require("mongoose");
+
+const UserSchema = new mongoose.Schema({
+    
+    fullName: {
+        type: String,
+        required: true
+    },
+    email: {
+        type: String,
+        required: true
+    },
+    password: {
+        type: String,
+        required: true
+    },
+
+    date: {
+        type: Date,
+        default: Date.now
+    },
+
+    phoneNumber: {
+        type: String,
+        required: true
+    },
+
+    InviteCode: {
+        type: String,
+        required: true
+    },
+
+    accountBalance: {
+        type: Number,
+        default: 0
+    },
+
+    BankInfo: 
+        {
+            bankName: {
+                type: String,
+            },
+            accountNumber: {
+                type: String,
+            },
+            accountName: {
+                type: String,
+            }
+        },
+
+    status: {
+        type: Boolean,
+        default: false
+    },
+
+    isLogin: {
+        type: Boolean,
+        default: false
+    },
+
+    userEmailVerify: {
+        type: Boolean,
+        default: false
+    },
+
+    userSubscription: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Subscription"
+    },
+
+    userTransaction: [{
+
+        deposit: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Transaction"
+        },
+        withdraw: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Transaction"
+        }
+    }   
+    ],
+
+    token: {
+        type: String
+    }
+    
+}, { timestamps: true });
+
+module.exports = mongoose.model("User", UserSchema);
