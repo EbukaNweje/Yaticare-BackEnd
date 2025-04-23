@@ -25,7 +25,7 @@ const UserSchema = new mongoose.Schema({
         required: true
     },
 
-    InviteCode: {
+    referralCode: {
         type: String,
         required: true
     },
