@@ -30,6 +30,11 @@ const UserSchema = new mongoose.Schema({
         required: true
     },
 
+    inviteCode: {
+        type: String,
+        required: true
+    },
+
     accountBalance: {
         type: Number,
         default: 0
@@ -69,21 +74,18 @@ const UserSchema = new mongoose.Schema({
     },
 
     userTransaction: [{
-
         deposit: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Transaction"
+            ref: "deposit"
         },
         withdraw: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Transaction"
+            ref: "withdraw"
         }
     }   
     ],
 
-    token: {
-        type: String
-    }
+  
     
 }, { timestamps: true });
 

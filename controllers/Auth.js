@@ -13,7 +13,7 @@ exports.register = async (req, res, next) => {
         if (!errors.isEmpty()) {
             return next(createError(400, errors.array()[0].msg));
         }
-        const { userName, email, password, phoneNumber } = req.body;
+        const { userName, email, password, phoneNumber, referralCode } = req.body;
         const user = await User.findOne({ email });
         if (user) {
             return next(createError(400, "User already exists"));
@@ -24,12 +24,13 @@ exports.register = async (req, res, next) => {
             userName,
             email,
             password: hash,
-            phoneNumber
+            phoneNumber,
+            referralCode
         });
 
         // const codeNum = Math.floor(Math.random() * (123 - 1000) + 1000)
         const InviteCode = `${newUser.fullName.toLowerCase()}/${otp.generate(4, { digits: true, upperCaseAlphabets: true, lowerCaseAlphabets: true, specialChars: false })}`; 
-        newUser.InviteCode = InviteCode
+        newUser.inviteCode = InviteCode
         await newUser.save();
 
         res.status(201).json({ message: "User registered successfully", data: newUser});
