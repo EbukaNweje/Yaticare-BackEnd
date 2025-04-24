@@ -31,7 +31,7 @@ exports.register = async (req, res, next) => {
         // const codeNum = Math.floor(Math.random() * (123 - 1000) + 1000)
         const codeNum = otp.generate(4, { digits: true, upperCaseAlphabets: true, lowerCaseAlphabets: true, specialChars: false })
         const inviteName = newUser.userName.toLocaleLowerCase()
-        const InviteCode = `${inviteName}/${codeNum}`
+        const InviteCode = `${inviteName}${codeNum}`
         newUser.inviteCode = InviteCode
         await newUser.save();
 
