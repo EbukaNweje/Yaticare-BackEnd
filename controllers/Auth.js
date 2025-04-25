@@ -47,7 +47,7 @@ exports.login = async (req, res, next) => {
         const { email, password } = req.body;
         const user = await User.findOne({ email });
         if (!user) {
-            return next(createError(400, "User not found"));
+            return next(createError(400, "Invalid credentials."));
         }
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
