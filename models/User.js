@@ -40,8 +40,7 @@ const UserSchema = new mongoose.Schema({
         default: 0
     },
 
-    BankInfo: 
-        {
+    BankInfo: {
             bankName: {
                 type: String,
             },
@@ -51,7 +50,7 @@ const UserSchema = new mongoose.Schema({
             accountName: {
                 type: String,
             }
-        },
+    },
 
     status: {
         type: Boolean,
