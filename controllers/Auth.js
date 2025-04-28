@@ -14,7 +14,7 @@ exports.register = async (req, res, next) => {
             return next(createError(400, errors.array()[0].msg));
         }
 
-        const { userName, email, password, phoneNumber } = req.body;
+        const { userName, email, password, phoneNumber, referralCode } = req.body;
 
         const existingUser = await User.findOne({ email });
         if (existingUser) {
@@ -29,7 +29,6 @@ exports.register = async (req, res, next) => {
             email,
             password: hash,
             phoneNumber,
-            // referralCode,
         });
 
         // Generate Invite Code
@@ -39,12 +38,14 @@ exports.register = async (req, res, next) => {
         newUser.inviteCode.code = InviteCode;
 
         // Handle Referral Bonus
+
         if (referralCode) {
             const referrer = await User.findOne({ "inviteCode.code": referralCode });
             if (referrer) {
                 const bonusAmount = 15;
                 referrer.accountBalance += bonusAmount;
                 referrer.inviteCode.userInvited.push(newUser._id);
+                referrer.referralCount += 1;
                 await referrer.save();
             }
         }

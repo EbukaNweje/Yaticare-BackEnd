@@ -27,7 +27,6 @@ const UserSchema = new mongoose.Schema({
 
     referralCode: {
         type: String,
-        // required: true
     },
 
     inviteCode: { 
@@ -45,6 +44,11 @@ const UserSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: "User"
         }]
+    },
+
+    referralCount: {
+        type: Number,
+        default: 0
     },
 
     accountBalance: {
