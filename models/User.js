@@ -72,17 +72,17 @@ const UserSchema = new mongoose.Schema({
         ref: "Subscription"
     },
 
-    userTransaction: [{
-        deposit: {
+    userTransaction: {
+        deposit: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: "deposit"
-        },
-        withdraw: {
+        }],
+        withdraw: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: "withdraw"
-        }
+        }]
     }   
-    ],
+,
 
   
     
