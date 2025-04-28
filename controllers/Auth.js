@@ -13,34 +13,60 @@ exports.register = async (req, res, next) => {
         if (!errors.isEmpty()) {
             return next(createError(400, errors.array()[0].msg));
         }
-        const { userName, email, password, phoneNumber, referralCode } = req.body;
-        const user = await User.findOne({ email });
-        if (user) {
+
+        const { userName, email, password, phoneNumber } = req.body;
+
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
             return next(createError(400, "User already exists"));
         }
+
         const salt = await bcrypt.genSalt(10);
         const hash = await bcrypt.hash(password, salt);
+
         const newUser = new User({
             userName,
             email,
             password: hash,
             phoneNumber,
-            referralCode
+            // referralCode,
         });
 
-        // const codeNum = Math.floor(Math.random() * (123 - 1000) + 1000)
-        const codeNum = otp.generate(4, { digits: true, upperCaseAlphabets: true, lowerCaseAlphabets: true, specialChars: false })
-        const inviteName = newUser.userName.toLocaleLowerCase()
-        const InviteCode = `${inviteName}${codeNum}`
-        newUser.inviteCode = InviteCode
+        // Generate Invite Code
+        const codeNum = otp.generate(4, { digits: true, upperCaseAlphabets: true, lowerCaseAlphabets: true, specialChars: false });
+        const inviteName = newUser.userName.toLowerCase();
+        const InviteCode = `${inviteName}${codeNum}`;
+        newUser.inviteCode.code = InviteCode;
+
+        // Handle Referral Bonus
+        if (referralCode) {
+            const referrer = await User.findOne({ "inviteCode.code": referralCode });
+            if (referrer) {
+                const bonusAmount = 15;
+                referrer.accountBalance += bonusAmount;
+                referrer.inviteCode.userInvited.push(newUser._id);
+                await referrer.save();
+            }
+        }
+
         await newUser.save();
 
-        res.status(201).json({ message: "User registered successfully", data: newUser});
-        
+        // Generate Referral Link
+        const referralLink = `https://ya-ti-pauy.vercel.app/#/auth/Sign-up?referralCode=${newUser.inviteCode.code}`;
+
+        res.status(201).json({ 
+            message: "User registered successfully", 
+            data: {
+                user: newUser,
+                referralLink // <-- Send it here
+            }
+        });
+
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
 };
+
 
 exports.login = async (req, res, next) => {
     try {
@@ -49,18 +75,32 @@ exports.login = async (req, res, next) => {
         if (!user) {
             return next(createError(400, "Invalid credentials."));
         }
+
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return next(createError(400, "Invalid credentials"));
         }
-        const token = jwt.sign({ id: user._id}, process.env.JWT);
-        await user.save()
 
-        res.status(200).json({ message: "User logged in successfully", data: user, token });
+        const token = jwt.sign({ id: user._id }, process.env.JWT);
+
+        // Generate Referral Link
+        const referralLink = `https://ya-ti-pauy.vercel.app/#/auth/Sign-up?referralCode=${user.inviteCode.code}`;
+
+        await user.save();
+
+        res.status(200).json({ 
+            message: "User logged in successfully", 
+            data: {
+                user,
+                referralLink // <-- Send referral link here
+            },
+            token 
+        });
     } catch (error) {
         next(error);
     }
 };
+
 
 
 exports.logout = async (req, res, next) => {
@@ -172,4 +212,8 @@ exports.resetPassword = async (req, res, next) => {
         next(error);
     }
 }
+
+// const referralLink = async (req, res, next) => {
+    
+// }
 

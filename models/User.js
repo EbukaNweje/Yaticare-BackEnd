@@ -27,12 +27,24 @@ const UserSchema = new mongoose.Schema({
 
     referralCode: {
         type: String,
-        required: true
+        // required: true
     },
 
-    inviteCode: {
-        type: String,
-        required: true
+    inviteCode: { 
+            code: {
+            type: String,
+            required: true
+         },
+        
+        //     inviteLink: {
+        //     type: String,
+        //     required: true
+        //  },
+
+        userInvited: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User"
+        }]
     },
 
     accountBalance: {
