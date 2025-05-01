@@ -74,12 +74,12 @@ exports.login = async (req, res, next) => {
         const { email, password } = req.body;
         const user = await User.findOne({ email });
         if (!user) {
-            return next(createError(400, "Invalid credentials."));
+            return res.status(400).json({ message: "Invalid credentials" });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return next(createError(400, "Invalid credentials"));
+            return res.status(400).json({ message: "Invalid credentials" });
         }
 
         const token = jwt.sign({ id: user._id }, process.env.JWT);
@@ -98,7 +98,7 @@ exports.login = async (req, res, next) => {
             token 
         });
     } catch (error) {
-        next(error);
+        res.status(400).json({ message: error.message });
     }
 };
 
