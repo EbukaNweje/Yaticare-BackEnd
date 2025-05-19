@@ -48,6 +48,27 @@ exports.updateUser = async (req, res, next) => {
 }
 
 
+exports.saveBankInfo = async (req, res) => {
+    try{
+    const id = req.params.id
+    const {backName, accountName, accountNumber} = req.body
+
+    const user = await user.findById(id)
+
+    if(!user){
+        res.status(400).json({message: "User not found"})
+    }
+
+    user.BankInfo = {
+        backName: backName,
+        accountNumber: accountNumber,
+        accountName: accountName
+    }
+
+    }catch (error) {
+        res.status(400).json({message: error.message})
+    }
+}
 
 // exports.deposit = async (req, res, next) => {
 //     try {

@@ -214,7 +214,91 @@ exports.resetPassword = async (req, res, next) => {
     }
 }
 
-// const referralLink = async (req, res, next) => {
-    
-// }
 
+exports.changePassword = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { oldPassword, newPassword } = req.body;
+
+        // 1. Input validation
+        if (!oldPassword || !newPassword) {
+            return res.status(400).json({ message: "Old and new passwords are required" });
+        }
+
+        // if (newPassword.length < 6) {
+        //     return res.status(400).json({ message: "New password must be at least 6 characters long" });
+        // }
+
+        // 2. Find the user
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // 3. Compare old password
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: "Old password is incorrect" });
+        }
+
+        // 4. Hash and update new password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+        user.password = hashedPassword;
+        await user.save();
+
+        // 5. Respond success
+        return res.status(200).json({ message: "Password changed successfully" });
+
+    } catch (error) {
+        console.error("Change password error:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+exports.creeatepin = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { pin } = req.body;
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(400).json({ message: "User not found" });
+        }
+        if(pin.length < 4){
+            return res.status(400).json({ message: "Pin must be at least 4 characters long" });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hash = await bcrypt.hash(pin, salt);
+        user.pin = hash;
+        await user.save();
+        res.status(200).json({ message: "Pin created successfully", data: user });
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.changepin = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const {oldPin, newPin } = req.body;
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(400).json({ message: "User not found" });
+        }
+        const isMatch = await bcrypt.compare(oldPin, user.pin);
+        if (!isMatch) {
+            return res.status(400).json({ message: "Old pin is incorrect" });
+        }
+        if(newPin.length < 4){
+            return res.status(400).json({ message: "Pin must be at least 4 characters long" });
+        }
+        const salt = await bcrypt.genSalt(10);
+        const hash = await bcrypt.hash(newPin, salt);
+        user.pin = hash;
+        await user.save();
+        res.status(200).json({ message: "Pin changed successfully", data: user });
+    } catch (error) {
+        next(error);
+    }
+}

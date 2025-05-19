@@ -14,6 +14,10 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    
+    pin: {
+        type: String,
+    },
 
     date: {
         type: Date,
