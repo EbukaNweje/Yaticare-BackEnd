@@ -87,10 +87,10 @@ const UserSchema = new mongoose.Schema({
         default: false
     },
 
-    userSubscription: {
+    userSubscription: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "Subscription"
-    },
+    }],
 
     userTransaction: {
         deposit: [{

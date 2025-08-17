@@ -5,6 +5,8 @@ const { validationResult } = require("express-validator");
 const transporter = require("../utilities/email");
 const createError  = require("../utilities/error");
 const otp = require("otp-generator");
+const getDate = new Date().getFullYear();
+
 
 
 exports.register = async (req, res, next) => {
@@ -33,19 +35,86 @@ exports.register = async (req, res, next) => {
 
         // Generate Invite Code
         const codeNum = otp.generate(4, { digits: true, upperCaseAlphabets: true, lowerCaseAlphabets: true, specialChars: false });
-        const inviteName = newUser.userName.toLowerCase();
+        const inviteName = newUser.userName.replace(/\s+/g, "").toLowerCase();
         const InviteCode = `${inviteName}${codeNum}`;
         newUser.inviteCode.code = InviteCode;
 
-        // Handle Referral Bonus
-
+        // Handle Referral
         if (referralCode) {
             const referrer = await User.findOne({ "inviteCode.code": referralCode });
             if (referrer) {
-                const bonusAmount = 15;
-                referrer.accountBalance += bonusAmount;
+                // const bonusAmount = 15;
+                // referrer.accountBalance += bonusAmount;
                 referrer.inviteCode.userInvited.push(newUser._id);
                 referrer.referralCount += 1;
+
+        const subject = "You've Got A New Referral";
+        const emailText = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: Arial, Helvetica, sans-serif;
+                background-color: whitesmoke;
+            }
+            .container {
+                width: 100%;
+                background-color: whitesmoke;
+                padding: 0;
+                margin: 0;
+            }
+            .header, .footer {
+                width: 100%;
+                background-color: #333;
+                color: #fff;
+                text-align: center;
+                padding: 10px;
+            }
+            .content {
+                padding: 20px;
+            }
+        </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Welcome To YatiCare</h1>
+                </div>
+                <div class="content">
+                    <p>Hello ${referrer.userName},</p>
+                    <p>A new user joined YATiCare using your referral link. Thank you for growing our community!</p>
+                </div>
+                <div class="content">
+                    <p>Regards,</p>
+                    <p><b>YATiCare Team.</b></p>
+                </div>
+                <div class="footer">
+                    <p>&copy; ${getDate} Your Website. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        `;
+
+        const mailOptions = {
+            from: process.env.USEREMAIL,
+            to: referrer.email,
+            subject,
+            html: emailText
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                return next(createError(400, error.message));
+            }
+            console.log("Email sent: " + info.response);
+        })
                 await referrer.save();
             }
         }
@@ -54,6 +123,74 @@ exports.register = async (req, res, next) => {
 
         // Generate Referral Link
         const referralLink = `https://ya-ti-pauy.vercel.app/#/auth/Sign-up?referralCode=${newUser.inviteCode.code}`;
+
+        const subject = "Welcome To YatiCare";
+        const emailText = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: Arial, Helvetica, sans-serif;
+                background-color: whitesmoke;
+            }
+            .container {
+                width: 100%;
+                background-color: whitesmoke;
+                padding: 0;
+                margin: 0;
+            }
+            .header, .footer {
+                width: 100%;
+                background-color: #333;
+                color: #fff;
+                text-align: center;
+                padding: 10px;
+            }
+            .content {
+                padding: 20px;
+            }
+        </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Welcome To YatiCare</h1>
+                </div>
+                <div class="content">
+                    <p>Hello ${newUser.userName},</p>
+                    <p>Your YATiCare account was created successfully. Start exploring community-driven financial growth today!</p>
+                </div>
+                <div class="content">
+                    <p>Regards,</p>
+                    <p><b>YATiCare Team.</b></p>
+                </div>
+                <div class="footer">
+                    <p>&copy; ${getDate} YaTiCare. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        `;
+
+        const mailOptions = {
+            from: process.env.USEREMAIL,
+            to: email,
+            subject,
+            html: emailText
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                return next(createError(400, error.message));
+            }
+            console.log("Email sent: " + info.response);
+        })
 
         res.status(201).json({ 
             message: "User registered successfully", 
@@ -88,6 +225,75 @@ exports.login = async (req, res, next) => {
         const referralLink = `https://ya-ti-pauy.vercel.app/#/auth/Sign-up?referralCode=${user.inviteCode.code}`;
 
         await user.save();
+
+
+         const subject = "Recent Login Activity";
+        const emailText = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: Arial, Helvetica, sans-serif;
+                background-color: whitesmoke;
+            }
+            .container {
+                width: 100%;
+                background-color: whitesmoke;
+                padding: 0;
+                margin: 0;
+            }
+            .header, .footer {
+                width: 100%;
+                background-color: #333;
+                color: #fff;
+                text-align: center;
+                padding: 10px;
+            }
+            .content {
+                padding: 20px;
+            }
+        </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Welcome To YatiCare</h1>
+                </div>
+                <div class="content">
+                    <p>Hello ${user.userName},</p>
+                    <p>You’ve logged into your YATiCare account. If this wasn’t you, secure your account immediately.</p>
+                </div>
+                <div class="content">
+                    <p>Regards,</p>
+                    <p><b>YATiCare Team.</b></p>
+                </div>
+                <div class="footer">
+                    <p>&copy; ${getDate} YaTiCare. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        `;
+
+        const mailOptions = {
+            from: process.env.USEREMAIL,
+            to: email,
+            subject,
+            html: emailText
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                return next(createError(400, error.message));
+            }
+            console.log("Email sent: " + info.response);
+        })
 
         res.status(200).json({ 
             message: "User logged in successfully", 
