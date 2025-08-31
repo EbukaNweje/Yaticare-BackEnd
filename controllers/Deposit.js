@@ -81,7 +81,7 @@ exports.userDeposit = async (req, res, next) => {
 
     // After deposit, check if user has a referrer
     if (user.referralCode) {
-      const referrer = await User.findOne({
+      const referrer = await user.findOne({
         "inviteCode.code": user.referralCode,
       });
 
@@ -92,12 +92,24 @@ exports.userDeposit = async (req, res, next) => {
         await referrer.save();
 
         if (deposit) {
-          const msg = `Hi ${user.userName}, you just deposited ${roundedNumber} to your balance in ${PaymentType}`;
-          const message = new msgModel({
-            id: User._id,
-            msg,
+          const mailOptions = {
+            from: process.env.USEREMAIL,
+            to: referrer.email,
+            subject: "Deposit Request Initiated",
+            html: `
+                        <h2>Hello ${referrer.userName}!</h2>
+                        <p> you just deposited ${roundedNumber} to your balance in ${PaymentType}</p>
+                        <p>Regards, <br>YATiCare  Team.</p>
+                    `,
+          };
+
+          transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+              console.error("Email sending failed: ", error.message);
+            } else {
+              console.log("Referral email sent successfully");
+            }
           });
-          await message.save();
         }
 
         // Send Email to referrer
@@ -130,16 +142,16 @@ exports.userDeposit = async (req, res, next) => {
           } else {
             console.log("Referral email sent successfully");
           }
-
-          if (deposit.status === "pending") {
-            return res.status(200).json({
-              message: `Deposit made and pending`,
-            });
-          }
-          if (deposit.status === "confirmed") {
-            User.accountBalance += roundedNumber;
-          }
         });
+
+        if (deposit.status === "pending") {
+          return res.status(200).json({
+            message: `Deposit made and pending`,
+          });
+        }
+        if (deposit.status === "confirmed") {
+          User.accountBalance += roundedNumber;
+        }
       }
     }
 
