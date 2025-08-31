@@ -1,97 +1,72 @@
 const User = require("../models/User");
+const createError = require("../utilities/error");
 // const paystack = require('paystack')(process.env.PAYSTACK_SECRET_KEY);
 
-
 exports.getOneUser = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const user = await User.findById(id);
-        if (!user) {
-            return next(createError(400, "User not found"));
-        }
-        res.status(200).json({ message: "User found successfully", data: user });
-    } catch (error) {
-        next(error);
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+    if (!user) {
+      return next(createError(400, "User not found"));
     }
-}
+    res.status(200).json({ message: "User found successfully", data: user });
+  } catch (error) {
+    next(error);
+  }
+};
 
 exports.deleteUser = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const user = await User.findByIdAndDelete(id);
-        if (!user) {
-            return next(createError(400, "User not found"));
-        }
-        res.status(200).json({ message: "User deleted successfully" });
-    } catch (error) {
-        next(error);
+  try {
+    const { id } = req.params;
+    const user = await User.findByIdAndDelete(id);
+    if (!user) {
+      return next(createError(400, "User not found"));
     }
-}
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
 
 exports.updateUser = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const { fullName, email, password, phoneNumber } = req.body;
-        const user = await User.findById(id);
-        if (!user) {
-            return next(createError(400, "User not found"));
-        }
-        user.fullName = fullName;
-        user.email = email;
-        user.password = password;
-        user.phoneNumber = phoneNumber;
-        await user.save();
-        res.status(200).json({ message: "User updated successfully", data: user });
-    } catch (error) {
-        next(error);
+  try {
+    const { id } = req.params;
+    const { fullName, email, password, phoneNumber } = req.body;
+    const user = await User.findById(id);
+    if (!user) {
+      return next(createError(400, "User not found"));
     }
-}
-
+    user.fullName = fullName;
+    user.email = email;
+    user.password = password;
+    user.phoneNumber = phoneNumber;
+    await user.save();
+    res.status(200).json({ message: "User updated successfully", data: user });
+  } catch (error) {
+    next(error);
+  }
+};
 
 exports.saveBankInfo = async (req, res) => {
-    try{
-    const id = req.params.id
-    const {backName, accountName, accountNumber} = req.body
+  try {
+    const id = req.params.id;
+    const { backName, accountName, accountNumber } = req.body;
 
-    const user = await user.findById(id)
+    const user = await user.findById(id);
 
-    if(!user){
-        res.status(400).json({message: "User not found"})
+    if (!user) {
+      res.status(400).json({ message: "User not found" });
     }
 
     user.BankInfo = {
-        backName: backName,
-        accountNumber: accountNumber,
-        accountName: accountName
-    }
-
-    }catch (error) {
-        res.status(400).json({message: error.message})
-    }
-}
-
-// exports.deposit = async (req, res, next) => {
-//     try {
-//         const { id } = req.params;
-//         const { amount } = req.body;
-//         const user = await User.findById(id);
-//         if (!user) {
-//             return next(createError(400, "User not found"));
-//         }
-
-//         // Create a new payment on Paystack
-//         const payment = await paystack.transaction.initialize({
-//             amount: amount * 100, // Convert to kobo
-//             email: user.email,
-//             callback_url: 'https://example.com/callback', // URL to redirect to after payment
-//         });
-
-//         // Redirect the user to the payment page
-//         res.redirect(payment.data.authorization_url);
-//     } catch (error) {
-//         next(error);
-//     }
-// }
+      backName: backName,
+      accountNumber: accountNumber,
+      accountName: accountName,
+    };
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
 
 // exports.callback = async (req, res, next) => {
 //     try {
@@ -113,7 +88,6 @@ exports.saveBankInfo = async (req, res) => {
 //     }
 // }
 
-
 // exports.deposit = async (req, res, next) => {
 //     try {
 //         const { id } = req.params;
@@ -129,4 +103,3 @@ exports.saveBankInfo = async (req, res) => {
 //         next(error);
 //     }
 // }
-
