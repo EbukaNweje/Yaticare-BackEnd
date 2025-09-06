@@ -51,7 +51,7 @@ exports.updateUser = async (req, res, next) => {
 exports.saveBankInfo = async (req, res) => {
   try {
     const id = req.params.id;
-    const { backName, accountName, accountNumber } = req.body;
+    const { WalletName, WalletAddress } = req.body;
 
     const user = await user.findById(id);
 
@@ -59,11 +59,14 @@ exports.saveBankInfo = async (req, res) => {
       res.status(400).json({ message: "User not found" });
     }
 
-    user.BankInfo = {
-      backName: backName,
-      accountNumber: accountNumber,
-      accountName: accountName,
+    user.WalletInfo = {
+      WalletName: WalletName,
+      WalletAddress: WalletAddress,
     };
+    await user.save();
+    res
+      .status(200)
+      .json({ message: "Wallet info saved successfully", data: user });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
