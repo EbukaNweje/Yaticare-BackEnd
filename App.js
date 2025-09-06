@@ -8,7 +8,7 @@ const userHistory = require("./routes/History");
 
 const app = express();
 
-app.use(cors());
+app.use(cors({ origin: "*" }));
 app.use(cookieParser());
 app.use(express.json());
 
