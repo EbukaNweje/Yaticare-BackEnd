@@ -3,50 +3,53 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
 const transporter = require("../utilities/email");
-const createError  = require("../utilities/error");
+const createError = require("../utilities/error");
 const otp = require("otp-generator");
 const getDate = new Date().getFullYear();
 
-
-
 exports.register = async (req, res, next) => {
-    try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return next(createError(400, errors.array()[0].msg));
-        }
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return next(createError(400, errors.array()[0].msg));
+    }
 
-        const { userName, email, password, phoneNumber, referralCode } = req.body;
+    const { userName, email, password, phoneNumber, referralCode } = req.body;
 
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ message: "User already exists" });
-        }
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
 
-        const salt = await bcrypt.genSalt(10);
-        const hash = await bcrypt.hash(password, salt);
+    const salt = await bcrypt.genSalt(10);
+    const hash = await bcrypt.hash(password, salt);
 
-        const newUser = new User({
-            userName,
-            email,
-            password: hash,
-            phoneNumber,
-        });
+    const newUser = new User({
+      userName,
+      email,
+      password: hash,
+      phoneNumber,
+    });
 
-        // Generate Invite Code
-        const codeNum = otp.generate(4, { digits: true, upperCaseAlphabets: true, lowerCaseAlphabets: true, specialChars: false });
-        const inviteName = newUser.userName.replace(/\s+/g, "").toLowerCase();
-        const InviteCode = `${inviteName}${codeNum}`;
-        newUser.inviteCode.code = InviteCode;
+    // Generate Invite Code
+    const codeNum = otp.generate(4, {
+      digits: true,
+      upperCaseAlphabets: true,
+      lowerCaseAlphabets: true,
+      specialChars: false,
+    });
+    const inviteName = newUser.userName.replace(/\s+/g, "").toLowerCase();
+    const InviteCode = `${inviteName}${codeNum}`;
+    newUser.inviteCode.code = InviteCode;
 
-        // Handle Referral
-        if (referralCode) {
-            const referrer = await User.findOne({ "inviteCode.code": referralCode });
-            if (referrer) {
-                // const bonusAmount = 15;
-                // referrer.accountBalance += bonusAmount;
-                referrer.inviteCode.userInvited.push(newUser._id);
-                referrer.referralCount += 1;
+    // Handle Referral
+    if (referralCode) {
+      const referrer = await User.findOne({ "inviteCode.code": referralCode });
+      if (referrer) {
+        // const bonusAmount = 15;
+        // referrer.accountBalance += bonusAmount;
+        referrer.inviteCode.userInvited.push(newUser._id);
+        referrer.referralCount += 1;
 
         const subject = "You've Got A New Referral";
         const emailText = `
@@ -103,29 +106,29 @@ exports.register = async (req, res, next) => {
         `;
 
         const mailOptions = {
-            from: process.env.USEREMAIL,
-            to: referrer.email,
-            subject,
-            html: emailText
+          from: process.env.USEREMAIL,
+          to: referrer.email,
+          subject,
+          html: emailText,
         };
 
         transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                return next(createError(400, error.message));
-            }
-            console.log("Email sent: " + info.response);
-        })
-                await referrer.save();
-            }
-        }
+          if (error) {
+            return next(createError(400, error.message));
+          }
+          console.log("Email sent: " + info.response);
+        });
+        await referrer.save();
+      }
+    }
 
-        await newUser.save();
+    await newUser.save();
 
-        // Generate Referral Link
-        const referralLink = `https://ya-ti-pauy.vercel.app/#/auth/Sign-up?referralCode=${newUser.inviteCode.code}`;
+    // Generate Referral Link
+    const referralLink = `https://ya-ti-pauy.vercel.app/#/auth/Sign-up?referralCode=${newUser.inviteCode.code}`;
 
-        const subject = "Welcome To YatiCare";
-        const emailText = `
+    const subject = "Welcome To YatiCare";
+    const emailText = `
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -178,57 +181,54 @@ exports.register = async (req, res, next) => {
         </html>
         `;
 
-        const mailOptions = {
-            from: process.env.USEREMAIL,
-            to: email,
-            subject,
-            html: emailText
-        };
+    const mailOptions = {
+      from: process.env.USEREMAIL,
+      to: email,
+      subject,
+      html: emailText,
+    };
 
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                return next(createError(400, error.message));
-            }
-            console.log("Email sent: " + info.response);
-        })
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        return next(createError(400, error.message));
+      }
+      console.log("Email sent: " + info.response);
+    });
 
-        res.status(201).json({ 
-            message: "User registered successfully", 
-            data: {
-                user: newUser,
-                referralLink // <-- Send it here
-            }
-        });
-
-    } catch (error) {
-        res.status(400).json({ message: error.message });
-    }
+    res.status(201).json({
+      message: "User registered successfully",
+      data: {
+        user: newUser,
+        referralLink, // <-- Send it here
+      },
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
 };
 
-
 exports.login = async (req, res, next) => {
-    try {
-        const { email, password } = req.body;
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(400).json({ message: "Invalid credentials" });
-        }
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
 
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ message: "Invalid credentials" });
-        }
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
 
-        const token = jwt.sign({ id: user._id }, process.env.JWT);
+    const token = jwt.sign({ id: user._id }, process.env.JWT);
 
-        // Generate Referral Link
-        const referralLink = `https://ya-ti-pauy.vercel.app/#/auth/Sign-up?referralCode=${user.inviteCode.code}`;
+    // Generate Referral Link
+    const referralLink = `https://ya-ti-pauy.vercel.app/#/auth/Sign-up?referralCode=${user.inviteCode.code}`;
 
-        await user.save();
+    await user.save();
 
-
-         const subject = "Recent Login Activity";
-        const emailText = `
+    const subject = "Recent Login Activity";
+    const emailText = `
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -281,60 +281,60 @@ exports.login = async (req, res, next) => {
         </html>
         `;
 
-        const mailOptions = {
-            from: process.env.USEREMAIL,
-            to: email,
-            subject,
-            html: emailText
-        };
+    const mailOptions = {
+      from: process.env.USEREMAIL,
+      to: email,
+      subject,
+      html: emailText,
+    };
 
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                return next(createError(400, error.message));
-            }
-            console.log("Email sent: " + info.response);
-        })
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        return next(createError(400, error.message));
+      }
+      console.log("Email sent: " + info.response);
+    });
 
-        res.status(200).json({ 
-            message: "User logged in successfully", 
-            data: {
-                user,
-                referralLink // <-- Send referral link here
-            },
-            token 
-        });
-    } catch (error) {
-        res.status(400).json({ message: error.message });
-    }
+    res.status(200).json({
+      message: "User logged in successfully",
+      data: {
+        user,
+        referralLink, // <-- Send referral link here
+      },
+      token,
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
 };
 
-
-
 exports.logout = async (req, res, next) => {
-    const id = req.params.id
-    try {
-        const user = await User.findById(id);
-        if (!user) {
-            return next(createError(400, "User not found"));
-        }
-        user.isLogin = false
-        await user.save()
-        res.status(200).json({ message: "User logged out successfully", data: user });
-    } catch (error) {
-        next(error);
+  const id = req.params.id;
+  try {
+    const user = await User.findById(id);
+    if (!user) {
+      return next(createError(400, "User not found"));
     }
-}
+    user.isLogin = false;
+    await user.save();
+    res
+      .status(200)
+      .json({ message: "User logged out successfully", data: user });
+  } catch (error) {
+    next(error);
+  }
+};
 
 exports.forgetPassword = async (req, res, next) => {
-    try {
-        const { email } = req.body;
-        const user = await User.findOne({ email });
-        if (!user) {
-            return next(createError(400, "User not found"));
-        }
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return next(createError(400, "User not found"));
+    }
 
-        const subject = "Reset Password Notification";
-        const emailText = `
+    const subject = "Reset Password Notification";
+    const emailText = `
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -384,127 +384,133 @@ exports.forgetPassword = async (req, res, next) => {
         </html>
         `;
 
-        const mailOptions = {
-            from: process.env.USEREMAIL,
-            to: email,
-            subject,
-            html: emailText
-        };
+    const mailOptions = {
+      from: process.env.USEREMAIL,
+      to: email,
+      subject,
+      html: emailText,
+    };
 
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                return next(createError(400, error.message));
-            }
-            return res.status(200).json({ message: "Password reset email sent successfully" });
-        });
-    } catch (error) {
-        next(error);
-    }
-}
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        return next(createError(400, error.message));
+      }
+      return res
+        .status(200)
+        .json({ message: "Password reset email sent successfully" });
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 exports.resetPassword = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const { password } = req.body;
-        const user = await User.findById(id);
-        if (!user) {
-            return next(createError(400, "User not found"));
-        }
-        const salt = await bcrypt.genSalt(10);
-        const hash = await bcrypt.hash(password, salt);
-        user.password = hash;
-        await user.save();
-        res.status(200).json({ message: "Password reset successfully" });
-    } catch (error) {
-        next(error);
+  try {
+    const { id } = req.params;
+    const { password } = req.body;
+    const user = await User.findById(id);
+    if (!user) {
+      return next(createError(400, "User not found"));
     }
-}
-
+    const salt = await bcrypt.genSalt(10);
+    const hash = await bcrypt.hash(password, salt);
+    user.password = hash;
+    await user.save();
+    res.status(200).json({ message: "Password reset successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
 
 exports.changePassword = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const { oldPassword, newPassword } = req.body;
+  try {
+    const { id } = req.params;
+    const { oldPassword, newPassword } = req.body;
 
-        // 1. Input validation
-        if (!oldPassword || !newPassword) {
-            return res.status(400).json({ message: "Old and new passwords are required" });
-        }
-
-        // if (newPassword.length < 6) {
-        //     return res.status(400).json({ message: "New password must be at least 6 characters long" });
-        // }
-
-        // 2. Find the user
-        const user = await User.findById(id);
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        // 3. Compare old password
-        const isMatch = await bcrypt.compare(oldPassword, user.password);
-        if (!isMatch) {
-            return res.status(401).json({ message: "Old password is incorrect" });
-        }
-
-        // 4. Hash and update new password
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(newPassword, salt);
-        user.password = hashedPassword;
-        await user.save();
-
-        // 5. Respond success
-        return res.status(200).json({ message: "Password changed successfully" });
-
-    } catch (error) {
-        console.error("Change password error:", error);
-        return res.status(500).json({ message: "Internal server error" });
+    // 1. Input validation
+    if (!oldPassword || !newPassword) {
+      return res
+        .status(400)
+        .json({ message: "Old and new passwords are required" });
     }
+
+    // if (newPassword.length < 6) {
+    //     return res.status(400).json({ message: "New password must be at least 6 characters long" });
+    // }
+
+    // 2. Find the user
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // 3. Compare old password
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Old password is incorrect" });
+    }
+
+    // 4. Hash and update new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    user.password = hashedPassword;
+    await user.save();
+
+    // 5. Respond success
+    return res.status(200).json({ message: "Password changed successfully" });
+  } catch (error) {
+    console.error("Change password error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 exports.creeatepin = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const { pin } = req.body;
-        const user = await User.findById(id);
-        if (!user) {
-            return res.status(400).json({ message: "User not found" });
-        }
-        if(pin.length < 4){
-            return res.status(400).json({ message: "Pin must be at least 4 characters long" });
-        }
-
-        const salt = await bcrypt.genSalt(10);
-        const hash = await bcrypt.hash(pin, salt);
-        user.pin = hash;
-        await user.save();
-        res.status(200).json({ message: "Pin created successfully", data: user });
-    } catch (error) {
-        next(error);
+  try {
+    const { id } = req.params;
+    const { pin } = req.body;
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
     }
-}
+    if (pin.length < 4) {
+      return res
+        .status(400)
+        .json({ message: "Pin must be at least 4 characters long" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hash = await bcrypt.hash(pin, salt);
+    user.pin = hash;
+    await user.save();
+    res.status(200).json({ message: "Pin created successfully", data: user });
+  } catch (error) {
+    next(error);
+  }
+};
 
 exports.changepin = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const {oldPin, newPin } = req.body;
-        const user = await User.findById(id);
-        if (!user) {
-            return res.status(400).json({ message: "User not found" });
-        }
-        const isMatch = await bcrypt.compare(oldPin, user.pin);
-        if (!isMatch) {
-            return res.status(400).json({ message: "Old pin is incorrect" });
-        }
-        if(newPin.length < 4){
-            return res.status(400).json({ message: "Pin must be at least 4 characters long" });
-        }
-        const salt = await bcrypt.genSalt(10);
-        const hash = await bcrypt.hash(newPin, salt);
-        user.pin = hash;
-        await user.save();
-        res.status(200).json({ message: "Pin changed successfully", data: user });
-    } catch (error) {
-        next(error);
+  try {
+    const { id } = req.params;
+    const { oldPin, newPin } = req.body;
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
     }
-}
+    const isMatch = await bcrypt.compare(oldPin, user.pin);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Old pin is incorrect" });
+    }
+    if (newPin.length < 4) {
+      return res
+        .status(400)
+        .json({ message: "Pin must be at least 4 characters long" });
+    }
+    const salt = await bcrypt.genSalt(10);
+    const hash = await bcrypt.hash(newPin, salt);
+    user.pin = hash;
+    await user.save();
+    res.status(200).json({ message: "Pin changed successfully", data: user });
+  } catch (error) {
+    next(error);
+  }
+};

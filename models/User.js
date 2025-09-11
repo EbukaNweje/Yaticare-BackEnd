@@ -9,6 +9,8 @@ const UserSchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
+      unique: true,
+      lowercase: true,
     },
     password: {
       type: String,
@@ -62,7 +64,7 @@ const UserSchema = new mongoose.Schema(
       default: 0,
     },
 
-    BankInfo: {
+    WalletInfo: {
       WalletName: {
         type: String,
       },
@@ -115,6 +117,13 @@ const UserSchema = new mongoose.Schema(
         {
           type: mongoose.Schema.Types.ObjectId,
           ref: "withdraw",
+        },
+      ],
+
+      subscriptionsHistory: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Subscription",
         },
       ],
     },
