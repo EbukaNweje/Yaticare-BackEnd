@@ -53,20 +53,20 @@ exports.saveBankInfo = async (req, res) => {
     const id = req.params.id;
     const { WalletName, WalletAddress } = req.body;
 
-    const user = await user.findById(id);
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { WalletInfo: { WalletName, WalletAddress } },
+      { new: true } // this returns the updated document
+    );
 
-    if (!user) {
-      res.status(400).json({ message: "User not found" });
+    if (!updatedUser) {
+      return res.status(400).json({ message: "User not found" });
     }
 
-    user.WalletInfo = {
-      WalletName: WalletName,
-      WalletAddress: WalletAddress,
-    };
-    await user.save();
-    res
-      .status(200)
-      .json({ message: "Wallet info saved successfully", data: user });
+    res.status(200).json({
+      message: "Wallet info saved successfully",
+      data: updatedUser,
+    });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

@@ -67,9 +67,11 @@ const UserSchema = new mongoose.Schema(
     WalletInfo: {
       WalletName: {
         type: String,
+        default: "",
       },
       WalletAddress: {
         type: String,
+        default: "",
       },
     },
     // BankInfo: {
