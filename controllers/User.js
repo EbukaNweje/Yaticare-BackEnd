@@ -32,17 +32,23 @@ exports.deleteUser = async (req, res, next) => {
 exports.updateUser = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { fullName, email, password, phoneNumber } = req.body;
+
     const user = await User.findById(id);
     if (!user) {
       return next(createError(400, "User not found"));
     }
-    user.fullName = fullName;
-    user.email = email;
-    user.password = password;
-    user.phoneNumber = phoneNumber;
+
+    // Loop through keys in req.body and update only those
+    Object.keys(req.body).forEach((key) => {
+      user[key] = req.body[key];
+    });
+
     await user.save();
-    res.status(200).json({ message: "User updated successfully", data: user });
+
+    res.status(200).json({
+      message: "User updated successfully",
+      data: user,
+    });
   } catch (error) {
     next(error);
   }
