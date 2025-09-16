@@ -32,23 +32,17 @@ exports.deleteUser = async (req, res, next) => {
 exports.updateUser = async (req, res, next) => {
   try {
     const { id } = req.params;
-
+    const { fullName, email, password, phoneNumber } = req.body;
     const user = await User.findById(id);
     if (!user) {
       return next(createError(400, "User not found"));
     }
-
-    // Loop through keys in req.body and update only those
-    Object.keys(req.body).forEach((key) => {
-      user[key] = req.body[key];
-    });
-
+    user.fullName = fullName;
+    user.email = email;
+    user.password = password;
+    user.phoneNumber = phoneNumber;
     await user.save();
-
-    res.status(200).json({
-      message: "User updated successfully",
-      data: user,
-    });
+    res.status(200).json({ message: "User updated successfully", data: user });
   } catch (error) {
     next(error);
   }
@@ -75,6 +69,33 @@ exports.saveBankInfo = async (req, res) => {
     });
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+};
+
+// Change Phone Number Controller
+exports.changePhoneNumber = async (req, res, next) => {
+  try {
+    const { id } = req.params; // user ID from URL
+    const { phoneNumber } = req.body; // new phone number from request body
+
+    if (!phoneNumber) {
+      return res.status(400).json({ message: "Phone number is required" });
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.phoneNumber = phoneNumber;
+    await user.save();
+
+    res.status(200).json({
+      message: "Phone number updated successfully",
+      data: { phoneNumber: user.phoneNumber },
+    });
+  } catch (error) {
+    next(error);
   }
 };
 

@@ -5,5 +5,6 @@ router.get("/userdata/:id", user.getOneUser);
 router.delete("/deleteuser/:id", user.deleteUser);
 router.put("/updateuser/:id", user.updateUser);
 router.put("/addWallet/:id", user.saveBankInfo);
+router.put("/changePhonenumber/:id", user.changePhoneNumber);
 
 module.exports = router;
