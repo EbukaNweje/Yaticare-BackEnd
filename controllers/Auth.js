@@ -125,7 +125,7 @@ exports.register = async (req, res, next) => {
     await newUser.save();
 
     // Generate Referral Link
-    const referralLink = `http://localhost:5173/#/auth/sign-up?referralCode=${newUser.inviteCode.code}`;
+    const referralLink = `https://ya-ti-pauy.vercel.app/#/auth/Sign-up?referralCode=${newUser.inviteCode.code}`;
 
     const subject = "Welcome To YatiCare";
     const emailText = `
