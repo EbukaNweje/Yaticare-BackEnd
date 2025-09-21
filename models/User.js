@@ -118,7 +118,7 @@ const UserSchema = new mongoose.Schema(
       withdraw: [
         {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "withdraw",
+          ref: "withdrawal",
         },
       ],
 

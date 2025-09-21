@@ -7,7 +7,7 @@ exports.getOneUser = async (req, res, next) => {
     const { id } = req.params;
     const user = await User.findById(id)
       .populate("userTransaction.deposit")
-      .populate("userTransaction.withdraw")
+      // .populate("userTransaction.withdrawal")
       .populate("inviteCode.userInvited");
     if (!user) {
       return next(createError(400, "User not found"));
