@@ -8,7 +8,7 @@ const { DateTime } = require("luxon");
 
 exports.userDeposit = async (req, res, next) => {
   try {
-    const { userId, amount, PaymentType } = req.body;
+    const { userId, amount, PaymentType, depositDate } = req.body;
 
     const user = await User.findById(userId);
 
@@ -66,10 +66,7 @@ exports.userDeposit = async (req, res, next) => {
       total: roundedNumber,
       status: "pending",
       transactionType: Depo.transactionType,
-      depositDate:
-        new Date().toDateString() +
-        " " +
-        new Date().toTimeString().split(" ")[0],
+      depositDate: depositDate,
     });
     await deposit.save();
 
