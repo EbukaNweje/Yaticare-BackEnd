@@ -32,7 +32,7 @@ const depositSchema = new mongoose.Schema({
   },
   depositDate: {
     type: String,
-    default: () => DateTime.now().toLocaleString(DateTime.DATETIME_MED),
+    default: () => Date.now().toLocaleString(),
   },
 });
 
