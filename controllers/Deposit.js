@@ -7,7 +7,7 @@ const createError = require("../utilities/error");
 
 exports.userDeposit = async (req, res, next) => {
   try {
-    const { userId, amount, PaymentType } = req.body;
+    const { userId, amount, PaymentType, userTimeZone } = req.body;
 
     const user = await User.findById(userId);
 
@@ -51,6 +51,9 @@ exports.userDeposit = async (req, res, next) => {
     }
 
     const Depo = await depositModel.find();
+    const formattedDate = DateTime.now()
+      .setZone(userTimeZone || "UTC")
+      .toFormat("ccc LLL dd yyyy HH:mm:ss");
 
     // Save the deposit details
     const deposit = new depositModel({
@@ -61,10 +64,7 @@ exports.userDeposit = async (req, res, next) => {
       total: roundedNumber,
       status: "pending",
       transactionType: Depo.transactionType,
-      depositDate:
-        new Date().toDateString() +
-        " " +
-        new Date().toTimeString().split(" ")[0],
+      depositDate: formattedDate,
     });
     await deposit.save();
 
