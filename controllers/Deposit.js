@@ -61,6 +61,10 @@ exports.userDeposit = async (req, res, next) => {
       total: roundedNumber,
       status: "pending",
       transactionType: Depo.transactionType,
+      depositDate:
+        new Date().toDateString() +
+        " " +
+        new Date().toTimeString().split(" ")[0],
     });
     await deposit.save();
 

@@ -31,24 +31,10 @@ const depositSchema = new mongoose.Schema(
       default: "pending",
     },
     depositDate: {
-      type: Date,
-      default: () => new Date(),
-      get: (val) =>
-        val
-          ? new Date(val).toLocaleString("en-GB", {
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-          : null,
+      type: String,
     },
   },
-  {
-    toJSON: { getters: true },
-    toObject: { getters: true },
-  }
+  { timestamps: true }
 );
 
 const depositModel = mongoose.model("deposit", depositSchema);
