@@ -1,8 +1,7 @@
-const Withdrawal = require("../models/withdrawal");
-const User = require("../models/User"); // adjust path
 const bcrypt = require("bcryptjs");
+const Withdrawal = require("../models/withdrawal");
+const User = require("../models/User");
 
-// 📌 Create a withdrawal request with PIN check
 const createWithdrawal = async (req, res) => {
   try {
     const {
@@ -25,8 +24,8 @@ const createWithdrawal = async (req, res) => {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    // Verify transaction PIN
-    const isMatch = await user.matchPin(pin);
+    // Verify transaction PIN using bcrypt
+    const isMatch = await bcrypt.compare(pin, user.transactionPin);
     if (!isMatch) {
       return res.status(401).json({ error: "Invalid PIN" });
     }
