@@ -44,7 +44,7 @@ exports.userDeposit = async (req, res, next) => {
         `https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=ngn`
       );
       const conversionRates = response.data.tether.ngn;
-      console.log("this is usdt:", conversionRates);
+      // console.log("this is usdt:", conversionRates);
       const myTotal = Number(conversionRates);
       const btcAmount = newAmount / myTotal;
       roundedNumber = btcAmount.toFixed(9);
