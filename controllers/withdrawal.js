@@ -1,6 +1,8 @@
 const Withdrawal = require("../models/withdrawal");
+const User = require("../models/User"); // adjust path
+const bcrypt = require("bcryptjs");
 
-// 📌 1. Create a withdrawal request
+// 📌 Create a withdrawal request with PIN check
 const createWithdrawal = async (req, res) => {
   try {
     const {
@@ -10,12 +12,26 @@ const createWithdrawal = async (req, res) => {
       bankName,
       accountNumber,
       accountName,
+      pin,
     } = req.body;
 
-    if (!amount || !method) {
-      return res.status(400).json({ error: "Amount and method are required" });
+    if (!amount || !method || !pin) {
+      return res
+        .status(400)
+        .json({ error: "Amount, method, and PIN are required" });
     }
 
+    // Get user
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    // Verify transaction PIN
+    const isMatch = await user.matchPin(pin);
+    if (!isMatch) {
+      return res.status(401).json({ error: "Invalid PIN" });
+    }
+
+    // If PIN correct, proceed with withdrawal
     const withdrawal = new Withdrawal({
       user: req.user._id,
       amount,
@@ -29,7 +45,7 @@ const createWithdrawal = async (req, res) => {
     await withdrawal.save();
 
     res.status(201).json({
-      message: "Withdrawal request created successfully",
+      message: "Withdrawal request submitted successfully",
       withdrawal,
     });
   } catch (err) {
