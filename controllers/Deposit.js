@@ -54,7 +54,7 @@ exports.userDeposit = async (req, res, next) => {
     const Depo = await depositModel.find();
     console.log("first", userTimeZone);
     const formattedDate = DateTime.now()
-      .setZone(userTimeZone || "UTC")
+      .setZone(userTimeZone)
       .toFormat("ccc LLL dd yyyy HH:mm:ss");
 
     // Save the deposit details
