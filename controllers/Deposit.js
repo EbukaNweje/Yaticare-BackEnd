@@ -4,6 +4,7 @@ const historyModel = require("../models/History");
 const User = require("../models/User");
 const transporter = require("../utilities/email");
 const createError = require("../utilities/error");
+const { DateTime } = require("luxon");
 
 exports.userDeposit = async (req, res, next) => {
   try {
@@ -51,6 +52,7 @@ exports.userDeposit = async (req, res, next) => {
     }
 
     const Depo = await depositModel.find();
+    console.log("first", userTimeZone);
     const formattedDate = DateTime.now()
       .setZone(userTimeZone || "UTC")
       .toFormat("ccc LLL dd yyyy HH:mm:ss");
