@@ -8,7 +8,7 @@ const { DateTime } = require("luxon");
 
 exports.userDeposit = async (req, res, next) => {
   try {
-    const { userId, amount, PaymentType, userTimeZone } = req.body;
+    const { userId, amount, PaymentType } = req.body;
 
     const user = await User.findById(userId);
 
@@ -52,10 +52,10 @@ exports.userDeposit = async (req, res, next) => {
     }
 
     const Depo = await depositModel.find();
-    console.log("first", userTimeZone);
-    const formattedDate = DateTime.now()
-      .setZone(userTimeZone)
-      .toFormat("ccc LLL dd yyyy HH:mm:ss");
+    // console.log("first", userTimeZone);
+    // const formattedDate = DateTime.now()
+    //   .setZone(userTimeZone || "UTC")
+    //   .toFormat("ccc LLL dd yyyy HH:mm:ss");
 
     // Save the deposit details
     const deposit = new depositModel({
@@ -66,7 +66,10 @@ exports.userDeposit = async (req, res, next) => {
       total: roundedNumber,
       status: "pending",
       transactionType: Depo.transactionType,
-      depositDate: formattedDate,
+      depositDate:
+        new Date().toDateString() +
+        " " +
+        new Date().toTimeString().split(" ")[0],
     });
     await deposit.save();
 
