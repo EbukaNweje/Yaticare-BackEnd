@@ -21,7 +21,7 @@ const createWithdrawal = async (req, res) => {
     }
 
     // Get user
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user?._id || req.body.userId);
     if (!user) return res.status(404).json({ error: "User not found" });
 
     // Verify transaction PIN using bcrypt
