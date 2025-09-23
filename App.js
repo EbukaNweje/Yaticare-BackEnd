@@ -17,7 +17,7 @@ app.use(express.json());
 app.use("/api/auth", AuthRoutes);
 app.use("/api/user", UserRoutes);
 app.use("/api/deposit", userDeposit);
-// app.use("/api/withdrawal", withdrawalRoutes);
+app.use("/api/withdrawal", withdrawalRoutes);
 app.use("/api/history", userHistory);
 app.use("/api", planRouter);
 
