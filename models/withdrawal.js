@@ -23,6 +23,9 @@ const WithdrawalSchema = new mongoose.Schema(
     walletAddress: {
       type: String,
     },
+    withdrawalDate: {
+      type: String,
+    },
     bankName: {
       type: String,
     },

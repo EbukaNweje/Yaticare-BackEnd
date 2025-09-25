@@ -6,8 +6,15 @@ const historyModel = require("../models/History");
 // 📌 Create Withdrawal
 const createWithdrawal = async (req, res) => {
   try {
-    const { userId, amount, method, walletAddress, accountName, pin } =
-      req.body;
+    const {
+      userId,
+      amount,
+      method,
+      walletAddress,
+      withdrawalDate,
+      accountName,
+      pin,
+    } = req.body;
 
     if (!userId || !amount || !method || !pin) {
       return res
@@ -19,8 +26,12 @@ const createWithdrawal = async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    if (amount > user.accountBalance)
-      return res.status(404).json({ error: "Insufficient balance" });
+    // if (amount > user.accountBalance)
+    //   return res.status(404).json({ error: "Insufficient balance" });
+    if (amount < 2)
+      return res
+        .status(404)
+        .json({ error: "Minimum withdrawal amount is $2.00" });
 
     if (!user.pin) {
       return res.status(400).json({ error: "Transaction PIN not set" });
@@ -40,6 +51,7 @@ const createWithdrawal = async (req, res) => {
       walletAddress,
       accountName,
       status: "pending",
+      withdrawalDate: withdrawalDate,
     });
 
     await withdrawal.save();
