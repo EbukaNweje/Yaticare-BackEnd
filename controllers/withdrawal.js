@@ -42,7 +42,7 @@ const createWithdrawal = async (req, res) => {
     await withdrawal.save();
 
     // Push withdrawal into user.userTransaction.withdraw
-    user.userTransaction.withdraw.push(withdrawal._id);
+    user.userTransaction.withdrawal.push(withdrawal._id);
     await user.save();
 
     // Save history record

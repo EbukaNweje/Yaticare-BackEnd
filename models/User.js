@@ -115,7 +115,7 @@ const UserSchema = new mongoose.Schema(
           ref: "deposit",
         },
       ],
-      withdraw: [
+      withdrawal: [
         {
           type: mongoose.Schema.Types.ObjectId,
           ref: "withdrawal",
