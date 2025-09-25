@@ -1,49 +1,61 @@
 const bcrypt = require("bcryptjs");
 const Withdrawal = require("../models/withdrawal");
 const User = require("../models/User");
+const historyModel = require("../models/History");
 
+// 📌 Create Withdrawal
 const createWithdrawal = async (req, res) => {
   try {
-    const {
-      amount,
-      method,
-      walletAddress,
-      bankName,
-      accountNumber,
-      accountName,
-      pin,
-    } = req.body;
+    const { userId, amount, method, walletAddress, accountName, pin } =
+      req.body;
 
-    if (!amount || !method || !pin) {
+    if (!userId || !amount || !method || !pin) {
       return res
         .status(400)
-        .json({ error: "Amount, method, and PIN are required" });
+        .json({ error: "User ID, amount, method, and PIN are required" });
     }
 
     // Get user
-    const user = await User.findById(req.user?._id || req.body.userId);
+    const user = await User.findById(userId);
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    // Verify transaction PIN using bcrypt
-    const isMatch = await bcrypt.compare(pin, user.transactionPin);
+    if (!user.pin) {
+      return res.status(400).json({ error: "Transaction PIN not set" });
+    }
+
+    // Compare pin
+    const isMatch = await bcrypt.compare(pin, user.pin);
     if (!isMatch) {
       return res.status(401).json({ error: "Invalid PIN" });
     }
 
-    // If PIN correct, proceed with withdrawal
+    // Create withdrawal
     const withdrawal = new Withdrawal({
-      user: req.user._id,
+      user: user._id,
       amount,
       method,
       walletAddress,
-      bankName,
-      accountNumber,
       accountName,
+      status: "pending",
     });
 
     await withdrawal.save();
 
-    res.status(201).json({
+    // Push withdrawal into user.userTransaction.withdraw
+    user.userTransaction.withdraw.push(withdrawal._id);
+    await user.save();
+
+    // Save history record
+    const history = new historyModel({
+      userId: user._id,
+      transactionType: "withdrawal",
+      amount,
+      to: walletAddress || accountName || method,
+    });
+
+    await history.save();
+
+    return res.status(201).json({
       message: "Withdrawal request submitted successfully",
       withdrawal,
     });
@@ -53,20 +65,24 @@ const createWithdrawal = async (req, res) => {
   }
 };
 
-// 📌 2. Get all withdrawals (Admin only)
+// 📌 Get all withdrawals (Admin)
 const getAllWithdrawals = async (req, res) => {
   try {
-    const withdrawals = await Withdrawal.find().populate("user", "name email");
+    const withdrawals = await Withdrawal.find().populate(
+      "user",
+      "userName email"
+    );
     res.json(withdrawals);
   } catch (err) {
     res.status(500).json({ error: "Server error" });
   }
 };
 
-// 📌 3. Get withdrawals for logged-in user
+// 📌 Get withdrawals for a user
 const getUserWithdrawals = async (req, res) => {
   try {
-    const withdrawals = await Withdrawal.find({ user: req.user._id }).sort({
+    const { userId } = req.params;
+    const withdrawals = await Withdrawal.find({ user: userId }).sort({
       createdAt: -1,
     });
     res.json(withdrawals);
@@ -75,7 +91,7 @@ const getUserWithdrawals = async (req, res) => {
   }
 };
 
-// 📌 4. Update withdrawal status (Admin: approve/reject)
+// 📌 Update withdrawal status (Admin)
 const updateWithdrawalStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -106,7 +122,7 @@ const updateWithdrawalStatus = async (req, res) => {
   }
 };
 
-// 📌 5. Delete withdrawal (Admin only)
+// 📌 Delete withdrawal (Admin)
 const deleteWithdrawal = async (req, res) => {
   try {
     const { id } = req.params;

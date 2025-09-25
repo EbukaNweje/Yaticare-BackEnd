@@ -186,3 +186,64 @@ exports.getAllDeposits = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+exports.approveDeposit = async (req, res, next) => {
+  try {
+    const { depositId } = req.params;
+
+    // Find the deposit
+    const deposit = await depositModel.findById(depositId).populate("User");
+    if (!deposit) {
+      return res.status(404).json({ message: "Deposit not found" });
+    }
+
+    if (deposit.status === "confirmed") {
+      return res.status(400).json({ message: "Deposit already confirmed" });
+    }
+
+    // Update deposit status
+    deposit.status = "confirmed";
+    await deposit.save();
+
+    // Credit the user's account balance
+    const user = await User.findById(deposit.user._id);
+    user.accountBalance = (user.accountBalance || 0) + Number(deposit.total);
+    await user.save();
+
+    // Log to history
+    const history = new historyModel({
+      userId: user._id,
+      transactionType: "Deposit Approved",
+      amount: deposit.total,
+    });
+    await history.save();
+
+    // Send confirmation email
+    const mailOptions = {
+      from: process.env.USEREMAIL,
+      to: user.email,
+      subject: "Deposit Confirmed ✅",
+      html: `
+        <h2>Hello ${user.userName}!</h2>
+        <p>Your deposit of <b>${deposit.amount}</b> (${deposit.PaymentType}) has been confirmed.</p>
+        <p>Your new balance is <b>${user.accountBalance}</b>.</p>
+        <p>Regards, <br>YATiCare Team.</p>
+      `,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Email sending failed: ", error.message);
+      } else {
+        console.log("Deposit approval email sent successfully");
+      }
+    });
+
+    res.status(200).json({
+      message: "Deposit approved successfully",
+      deposit,
+    });
+  } catch (error) {
+    console.error("Error approving deposit:", error.message);
+    next(error);
+  }
+};
