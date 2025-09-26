@@ -44,7 +44,7 @@ const createWithdrawal = async (req, res) => {
     }
 
     // Create withdrawal
-    const withdrawal = new Withdrawal({
+    const withdrawals = new Withdrawal({
       user: user._id,
       amount,
       method,
@@ -54,10 +54,10 @@ const createWithdrawal = async (req, res) => {
       withdrawalDate: withdrawalDate,
     });
 
-    await withdrawal.save();
+    await withdrawals.save();
 
     // Push withdrawal into user.userTransaction.withdraw
-    user.userTransaction.withdrawal.push(withdrawal._id);
+    user.userTransaction.withdrawal.push(withdrawals._id);
     await user.save();
 
     // Save history record
@@ -72,7 +72,7 @@ const createWithdrawal = async (req, res) => {
 
     return res.status(201).json({
       message: "Withdrawal request submitted successfully",
-      withdrawal,
+      withdrawals,
     });
   } catch (err) {
     console.error("Error creating withdrawal:", err.message);

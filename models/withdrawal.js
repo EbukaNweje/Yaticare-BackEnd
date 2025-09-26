@@ -7,6 +7,10 @@ const WithdrawalSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    transactionType: {
+      type: String,
+      default: "withdrawal",
+    },
     amount: {
       type: Number,
       required: true,
