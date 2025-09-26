@@ -26,8 +26,8 @@ const createWithdrawal = async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    // if (amount > user.accountBalance)
-    //   return res.status(404).json({ error: "Insufficient balance" });
+    if (amount > user.accountBalance)
+      return res.status(404).json({ error: "Insufficient balance" });
     if (amount < 2)
       return res
         .status(404)
