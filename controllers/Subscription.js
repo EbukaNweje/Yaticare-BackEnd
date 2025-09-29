@@ -1,19 +1,37 @@
-const Subscription = require("../models/Subscription");
 const User = require("../models/User");
+const Subscription = require("../models/Subscription");
 const cron = require("node-cron");
 
 exports.createSubscription = async (req, res) => {
   try {
     const { userId, plan, amount, durationInDays } = req.body;
 
+    // 1. Find user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // 2. Check balance
+    if (user.accountBalance < amount) {
+      return res.status(400).json({ message: "Insufficient balance" });
+    }
+
+    // 3. Deduct balance
+    user.accountBalance -= amount;
+    await user.save();
+
+    // 4. Calculate subscription end date
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + durationInDays);
 
+    // 5. Create subscription with status = active
     const newSubscription = new Subscription({
       user: userId,
       plan,
       amount,
       endDate,
+      status: "active", // ✅ force active
     });
 
     await newSubscription.save();
@@ -21,8 +39,10 @@ exports.createSubscription = async (req, res) => {
     res.status(201).json({
       message: "Subscription created successfully",
       subscription: newSubscription,
+      newBalance: user.accountBalance,
     });
   } catch (error) {
+    console.error("Error creating subscription:", error);
     res.status(500).json({ message: error.message });
   }
 };
