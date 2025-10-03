@@ -14,7 +14,7 @@ exports.createSubscription = async (req, res) => {
 
     // 2. Check balance
     if (user.accountBalance < amount) {
-      return res.status(400).json({ message: "Insufficient balance" });
+      throw res.status(400).json({ message: "Insufficient balance" });
     }
 
     // 3. Deduct balance

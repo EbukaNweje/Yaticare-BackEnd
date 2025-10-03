@@ -1,16 +1,14 @@
 const emailSender = require("../utilities/emailSender");
 const transporter = require("../utilities/email");
 const jwt = require("jsonwebtoken");
-const User = require("../models/User")
+const User = require("../models/User");
 const createError = require("../utilities/error");
-
-
 
 // exports.isLogin = async(req, res, next) => {
 //    const user = await User.findOne({email: req.body.email})
 //    if(!user){
 //        return next(createError(400, "User not found"))
-//    } 
+//    }
 
 //    if(user.token){
 //         const subject = "New Device Login Notification";
@@ -85,14 +83,14 @@ const createError = require("../utilities/error");
 //                         </tr>
 //                     </table>
 //                 </div>
-        
+
 //                 <div class="content">
 //                     <p>Hi ${user.fullName},</p>
 //                     <p>Someone is trying to login to your account. plase if it is you, ignore this message. If not, please click the link below to reset your password. {Link}</p>
 //                     <p>For more enquiries, kindly contact your account manager or use our live chat support on our platform. You can also send a direct mail to us at <span style="color: #4c7fff;">${process.env.USEREMAIL}</span></p>
 //                     <p>Thank you for choosing our platform. We look forward to serving you.</p>
 //                 </div>
-        
+
 //                 <div class="footer">
 //                     <div class="footer-content">
 //                         <div class="https://i.ibb.co/Gcs5Lbx/jjjjjjjjjj.jpg">
@@ -107,9 +105,9 @@ const createError = require("../utilities/error");
 //             </div>
 //         </body>
 //         </html>
-        
+
 //             `
-    
+
 //         const notificationEmailSend = emailSender(user.email, subject, isLoginMsg);
 //             transporter.sendMail(notificationEmailSend, (error, info) => {
 //                 if (error) {
@@ -120,32 +118,33 @@ const createError = require("../utilities/error");
 //             })
 //         return res.status(403).send('You are already logged in on another device');
 //    }
-   
+
 //    next()
 // }
 
-
 exports.isLogin = async (req, res, next) => {
-    const user = await User.findOne({email: req.body.email})
-    if (!user) {
-        return next(createError(400, "User not found"))
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    return res.status(404).send("User not found");
+  }
+
+  const token = jwt.sign(
+    { id: user._id, isLogin: user.isLogin },
+    process.env.JWT
+  );
+  user.token = token;
+  await user.save();
+
+  jwt.verify(user.token, process.env.JWT, (err, decoded) => {
+    if (err) {
+      return next(createError(400, "Invalid token"));
+    }
+    if (decoded.isLogin === true) {
+      return res
+        .status(403)
+        .send("You are already logged in on another device");
     }
 
-
-    const token = jwt.sign({ id: user._id, isLogin: user.isLogin}, process.env.JWT);
-    user.token = token
-    await user.save()
-
-    jwt.verify(user.token, process.env.JWT, (err, decoded) => {
-        if (err) {
-            return next(createError(400, "Invalid token"))
-        }
-        console.log(decoded)
-
-        if(decoded.isLogin === true){
-            return res.status(403).send('You are already logged in on another device');
-        }
-
-        next()
-    })
-}
+    next();
+  });
+};
