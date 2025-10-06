@@ -3,6 +3,9 @@ const Admin = require("../models/Admin");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const depositModel = require("../models/Deposit");
+const historyModel = require("../models/History");
+const Withdrawal = require("../models/withdrawal");
+const transporter = require("../utilities/emailSender");
 
 exports.createAdmin = async (req, res, next) => {
   try {
@@ -60,7 +63,7 @@ exports.approveDeposit = async (req, res, next) => {
     const { depositId } = req.params;
 
     // Find the deposit
-    const deposit = await depositModel.findById(depositId).populate("User");
+    const deposit = await depositModel.findById(depositId).populate("user");
     if (!deposit) {
       return res.status(404).json({ message: "Deposit not found" });
     }
@@ -75,7 +78,7 @@ exports.approveDeposit = async (req, res, next) => {
 
     // Credit the user's account balance
     const user = await User.findById(deposit.user._id);
-    user.accountBalance = (user.accountBalance || 0) + Number(deposit.total);
+    user.accountBalance = (user.accountBalance || 0) + Number(deposit.amount);
     await user.save();
 
     // Log to history
