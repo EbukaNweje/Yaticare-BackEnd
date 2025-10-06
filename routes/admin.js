@@ -3,7 +3,7 @@ const router = require("express").Router();
 
 router.post("/adminlogin", Admin.adminLogin);
 router.post("/createadmin", Admin.createAdmin);
-router.post("/approve/:depositId", Admin.approveDeposit);
+router.put("/approve/:depositId", Admin.approveDeposit);
 router.get("/allusers", Admin.getAllUsers);
 router.get("/alldeposits", Admin.getAllDeposits);
 router.get("/allwithdrawals", Admin.getAllWithdrawals);

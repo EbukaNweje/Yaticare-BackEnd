@@ -137,7 +137,7 @@ exports.getAllDeposits = async (req, res, next) => {
 exports.getAllWithdrawals = async (req, res, next) => {
   try {
     const withdrawals = await Withdrawal.find()
-      .populate("user")
+      .populate("user", "userName email")
       .sort({ createdAt: -1 });
     res.status(200).json({
       message: "Withdrawals retrieved successfully",
