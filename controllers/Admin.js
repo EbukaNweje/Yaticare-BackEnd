@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 const depositModel = require("../models/Deposit");
 const historyModel = require("../models/History");
 const Withdrawal = require("../models/withdrawal");
-const transporter = require("../utilities/emailSender");
+const transporter = require("../utilities/email");
 
 exports.createAdmin = async (req, res, next) => {
   try {
