@@ -8,6 +8,7 @@ const userHistory = require("./routes/History");
 const planRouter = require("./routes/plansRouter");
 const withdrawalRoutes = require("./routes/withdrawal");
 const subscriptions = require("./routes/Subscription");
+const admin = require("./routes/admin");
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use("/api/withdrawal", withdrawalRoutes);
 app.use("/api/history", userHistory);
 app.use("/api", planRouter);
 app.use("/api", subscriptions);
+app.use("/api/admin", admin);
 
 app.use("/", (req, res, next) => {
   res.status(200).send("Server is running");
