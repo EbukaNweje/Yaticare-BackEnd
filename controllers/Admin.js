@@ -2,6 +2,7 @@ const User = require("../models/User");
 const Admin = require("../models/Admin");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const depositModel = require("../models/Deposit");
 
 exports.createAdmin = async (req, res, next) => {
   try {
