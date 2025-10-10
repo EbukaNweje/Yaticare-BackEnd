@@ -1,12 +1,17 @@
 const Admin = require("../controllers/Admin");
+const { SuperAdminAuth } = require("../middleware/Middleware");
 const router = require("express").Router();
 
 router.post("/adminlogin", Admin.adminLogin);
 router.post("/createadmin", Admin.createAdmin);
-router.put("/approve/:depositId", Admin.approveDeposit);
+router.put("/approve/:depositId", SuperAdminAuth, Admin.approveDeposit);
 router.get("/allusers", Admin.getAllUsers);
 router.get("/alldeposits", Admin.getAllDeposits);
 router.get("/allwithdrawals", Admin.getAllWithdrawals);
-router.put("/approvewithdrawal/:withdrawalId", Admin.approveWithdrawal);
+router.put(
+  "/approvewithdrawal/:withdrawalId",
+  SuperAdminAuth,
+  Admin.approveWithdrawal
+);
 
 module.exports = router;
