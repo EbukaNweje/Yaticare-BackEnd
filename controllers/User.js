@@ -11,7 +11,8 @@ exports.getOneUser = async (req, res, next) => {
       .populate("userTransaction.bonusHistory")
       .populate("userTransaction.subscriptionsHistory")
       .populate("userTransaction.dailyInterestHistory")
-      .populate("inviteCode.userInvited");
+      .populate("inviteCode.userInvited")
+      .populate("userSubscription");
     if (!user) {
       return next(createError(400, "User not found"));
     }
