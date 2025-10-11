@@ -3,6 +3,7 @@ const Subscription = require("../models/Subscription");
 const cron = require("node-cron");
 const Bonus = require("../models/Bonus");
 const DailyInterest = require("../models/DailyInterest");
+const mongoose = require("mongoose"); // Add this line to fix the ReferenceError
 
 exports.createSubscription = async (req, res) => {
   try {
@@ -174,10 +175,11 @@ exports.getUserSubscriptions = async (req, res) => {
     }
 
     // Fetch subscriptions and populate plan details if needed
+    // console.log("Fetching subscriptions for user:", userId);
     const subscriptions = await Subscription.find({ user: userId }).populate(
       "plan"
     );
-    console.log(subscriptions);
+    // console.log("Subscriptions fetched:", subscriptions);
 
     if (!subscriptions.length) {
       return res
