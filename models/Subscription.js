@@ -8,7 +8,8 @@ const SubscriptionSchema = new mongoose.Schema(
       required: true,
     },
     plan: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "InvestmentPlan", // ✅ Correct reference
       required: true,
     },
     startDate: {

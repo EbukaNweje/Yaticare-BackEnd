@@ -177,6 +177,7 @@ exports.getUserSubscriptions = async (req, res) => {
     const subscriptions = await Subscription.find({ user: userId }).populate(
       "plan"
     );
+    console.log(subscriptions);
 
     if (!subscriptions.length) {
       return res
