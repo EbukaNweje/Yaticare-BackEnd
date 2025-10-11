@@ -197,3 +197,33 @@ exports.getUserSubscriptions = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+exports.getOneSubscription = async (req, res) => {
+  try {
+    const { subscriptionId } = req.params;
+
+    // Validate subscriptionId format
+    if (!mongoose.Types.ObjectId.isValid(subscriptionId)) {
+      return res
+        .status(400)
+        .json({ message: "Invalid subscription ID format" });
+    }
+
+    // Fetch the subscription and populate plan details
+    const subscription = await Subscription.findById(subscriptionId).populate(
+      "plan"
+    );
+
+    if (!subscription) {
+      return res.status(404).json({ message: "Subscription not found" });
+    }
+
+    res.status(200).json({
+      message: "Subscription retrieved successfully",
+      subscription,
+    });
+  } catch (error) {
+    console.error("Error fetching subscription:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
