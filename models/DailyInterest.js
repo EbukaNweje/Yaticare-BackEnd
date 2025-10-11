@@ -15,4 +15,4 @@ const DailyInterestSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("DailyInterest", DailyInterestSchema);
+module.exports = mongoose.model("dailyinterest", DailyInterestSchema);
