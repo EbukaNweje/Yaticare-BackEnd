@@ -74,6 +74,7 @@ const UserSchema = new mongoose.Schema(
         default: "",
       },
     },
+
     // BankInfo: {
     //         bankName: {
     //             type: String,
@@ -126,6 +127,18 @@ const UserSchema = new mongoose.Schema(
         {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Subscription",
+        },
+      ],
+      bonusHistory: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "bonus",
+        },
+      ],
+      dailyInterestHistory: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "dailyinterest",
         },
       ],
     },
