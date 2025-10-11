@@ -6,7 +6,7 @@ const DailyInterest = require("../models/DailyInterest");
 
 exports.createSubscription = async (req, res) => {
   try {
-    const { userId, plan, amount, durationInDays } = req.body;
+    const { userId, plan, amount, durationInDays, subscriptionDate } = req.body;
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -25,6 +25,7 @@ exports.createSubscription = async (req, res) => {
       amount,
       endDate,
       status: "active",
+      subscriptionDate,
     });
 
     await newSubscription.save();

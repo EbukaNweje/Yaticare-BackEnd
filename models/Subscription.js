@@ -28,6 +28,9 @@ const SubscriptionSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    subscriptionDate: {
+      type: String,
+    },
   },
   { timestamps: true }
 );
