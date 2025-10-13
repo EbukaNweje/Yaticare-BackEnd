@@ -40,7 +40,7 @@ exports.createSubscription = async (req, res) => {
     });
 
     if (referrer) {
-      const bonusAmount = amount * 0.05;
+      const bonusAmount = amount * 0.15;
       referrer.accountBalance += bonusAmount;
       referrer.inviteCode.bonusAmount =
         (referrer.inviteCode.bonusAmount || 0) + bonusAmount;
@@ -98,9 +98,9 @@ cron.schedule("0 0 * * *", async () => {
         currentDate.toDateString() === oneDayBeforeEnd.toDateString() &&
         subscription.status === "active"
       ) {
-        console.log(
-          `Notify user ${subscription.user} to recycle their subscription.`
-        );
+        res.status(400).json({
+          message: `Notify user ${subscription.user} to recycle their subscription.`,
+        });
       }
 
       if (currentDate >= subscription.endDate) {
@@ -109,7 +109,9 @@ cron.schedule("0 0 * * *", async () => {
       }
     }
   } catch (error) {
-    console.error("Error in daily subscription task:", error.message);
+    res.status(400).json({
+      message: `Error in daily subscription task:${error.message}`,
+    });
   }
 });
 
@@ -155,6 +157,8 @@ exports.recycleSubscription = async (req, res) => {
     if (referrer) {
       const commission = subscription.amount * 0.005;
       referrer.accountBalance += commission;
+      referrer.inviteCode.bonusAmount =
+        (referrer.inviteCode.bonusAmount || 0) + commission;
       await referrer.save();
     }
 
