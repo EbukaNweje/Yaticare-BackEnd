@@ -43,6 +43,9 @@ const createWithdrawal = async (req, res) => {
       return res.status(400).json({ error: "Transaction PIN not set" });
     }
 
+    user.accountBalance -= Number(amount);
+    await user.save();
+
     // Create withdrawal
     const withdrawals = new Withdrawal({
       user: user._id,

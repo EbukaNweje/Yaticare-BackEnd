@@ -162,23 +162,21 @@ exports.approveWithdrawal = async (req, res, next) => {
       return res.status(404).json({ message: "Withdrawal not found" });
     }
 
-    if (withdrawal.status === "approved") {
-      return res.status(400).json({ message: "Withdrawal already approved" });
-    }
-
     // Update withdrawal status
     withdrawal.status = "approved";
     await withdrawal.save();
 
+    if (withdrawal.status === "approved") {
+      return res.status(400).json({ message: "Withdrawal already approved" });
+    }
+
     // Deduct the user's account balance
     const user = await User.findById(withdrawal.user._id);
-    if (user.accountBalance < withdrawal.amount) {
-      return res
-        .status(400)
-        .json({ message: "Insufficient balance for this withdrawal" });
-    }
-    user.accountBalance -= Number(withdrawal.amount);
-    await user.save();
+    // if (user.accountBalance < withdrawal.amount) {
+    //   return res
+    //     .status(400)
+    //     .json({ message: "Insufficient balance for this withdrawal" });
+    // }
 
     // Log to history
     const history = new historyModel({
