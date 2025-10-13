@@ -10,7 +10,7 @@ const DailyInterestSchema = new mongoose.Schema(
       required: true,
     },
     amount: { type: Number, required: true },
-    date: { type: Date, default: Date.now },
+    date: { type: String },
   },
   { timestamps: true }
 );

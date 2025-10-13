@@ -44,11 +44,13 @@ exports.createSubscription = async (req, res) => {
       referrer.accountBalance += bonusAmount;
       referrer.inviteCode.bonusAmount =
         (referrer.inviteCode.bonusAmount || 0) + bonusAmount;
+      const date = new Date().toLocaleString();
 
       const bonus = new Bonus({
         user: referrer._id,
         amount: bonusAmount,
         reason: "Referral Bonus",
+        date,
       });
 
       await bonus.save();
@@ -78,11 +80,13 @@ cron.schedule("0 0 * * *", async () => {
       if (user) {
         const dailyBonus = subscription.amount * 0.2;
         user.accountBalance += dailyBonus;
+        const date = new Date().toLocaleString();
 
         const interest = new DailyInterest({
           user: user._id,
           subscription: subscription._id,
           amount: dailyBonus,
+          date,
         });
 
         await interest.save();
