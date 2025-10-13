@@ -42,7 +42,8 @@ exports.createSubscription = async (req, res) => {
     if (referrer) {
       const bonusAmount = amount * 0.05;
       referrer.accountBalance += bonusAmount;
-      referrer.bonusAmount = (referrer.bonusAmount || 0) + bonusAmount;
+      referrer.inviteCode.bonusAmount =
+        (referrer.inviteCode.bonusAmount || 0) + bonusAmount;
 
       const bonus = new Bonus({
         user: referrer._id,
