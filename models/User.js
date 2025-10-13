@@ -41,10 +41,9 @@ const UserSchema = new mongoose.Schema(
         required: true,
       },
 
-      //     inviteLink: {
-      //     type: String,
-      //     required: true
-      //  },
+      bonusAmount: {
+        type: Number,
+      },
 
       userInvited: [
         {
