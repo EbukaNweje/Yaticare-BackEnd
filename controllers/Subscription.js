@@ -164,6 +164,7 @@ exports.recycleSubscription = async (req, res) => {
       referrer.inviteCode.bonusAmount =
         (referrer.inviteCode.bonusAmount || 0) + commission;
       await referrer.save();
+      const date = new Date().toLocaleString();
 
       const bonus = new Bonus({
         user: referrer._id,
