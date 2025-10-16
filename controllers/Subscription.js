@@ -164,6 +164,17 @@ exports.recycleSubscription = async (req, res) => {
       referrer.inviteCode.bonusAmount =
         (referrer.inviteCode.bonusAmount || 0) + commission;
       await referrer.save();
+
+      const bonus = new Bonus({
+        user: referrer._id,
+        amount: commission,
+        reason: "Recycle Bonus",
+        date,
+      });
+
+      await bonus.save();
+      referrer.userTransaction.bonusHistory.push(bonus._id);
+      await referrer.save();
     }
 
     res.status(200).json({
