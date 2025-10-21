@@ -44,6 +44,8 @@ exports.createSubscription = async (req, res) => {
       const referrerSubscriptions = await Subscription.find({
         user: referrer._id,
       });
+
+      // Check if this is the referrer's first subscription
       const isFirstSubscription = referrerSubscriptions.length === 0;
 
       // Set bonus rate based on referrer's subscription history
