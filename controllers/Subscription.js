@@ -3,7 +3,7 @@ const Subscription = require("../models/Subscription");
 const cron = require("node-cron");
 const Bonus = require("../models/Bonus");
 const DailyInterest = require("../models/DailyInterest");
-const mongoose = require("mongoose"); // Add this line to fix the ReferenceError
+const mongoose = require("mongoose");
 
 exports.createSubscription = async (req, res) => {
   try {
@@ -44,9 +44,11 @@ exports.createSubscription = async (req, res) => {
       const referrerSubscriptions = await Subscription.find({
         user: referrer._id,
       });
+      console.log("Referrer Subscriptions:", referrerSubscriptions);
 
       // Check if this is the referrer's first subscription
       const isFirstSubscription = referrerSubscriptions.length === 0;
+      console.log("Is First Subscription:", isFirstSubscription);
 
       // Set bonus rate based on referrer's subscription history
       const bonusRate = isFirstSubscription ? 0.15 : 0.005;
