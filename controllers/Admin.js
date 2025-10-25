@@ -166,10 +166,6 @@ exports.approveWithdrawal = async (req, res, next) => {
     withdrawal.status = "approved";
     await withdrawal.save();
 
-    const user = await User.findById(withdrawal.user._id);
-
-    user.userTransactionTotal.withdrawalTotal += withdrawal.amountCharges;
-
     if (withdrawal.status === "approved") {
       return res.status(400).json({ message: "Withdrawal already approved" });
     }
@@ -182,6 +178,9 @@ exports.approveWithdrawal = async (req, res, next) => {
     // }
 
     // Log to history
+    const user = await User.findById(withdrawal.user._id);
+    user.userTransactionTotal.withdrawalTotal += withdrawal.amountCharges;
+    await user.save();
     const history = new historyModel({
       userId: user._id,
       transactionType: "Withdrawal Approved",
