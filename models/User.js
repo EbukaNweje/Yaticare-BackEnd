@@ -20,6 +20,7 @@ const UserSchema = new mongoose.Schema(
 
     pin: {
       type: String,
+      default: "",
     },
 
     date: {
