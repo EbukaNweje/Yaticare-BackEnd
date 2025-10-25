@@ -29,35 +29,32 @@ exports.createSubscription = async (req, res) => {
       subscriptionDate,
     });
 
-    await newSubscription.save();
-
-    user.userSubscription.push(newSubscription._id);
-    user.userTransaction.subscriptionsHistory.push(newSubscription._id);
+    // Check if the user creating the subscription has any existing subscriptions
+    const userSubscriptions = await Subscription.find({ user: userId });
+    const isFirstSubscription = userSubscriptions.length === 0;
 
     // 🎁 Referral Bonus Logic
     const referrer = await User.findOne({
       "inviteCode.userInvited": user._id,
     });
 
+    // console.log("Referrer:", referrer);
+
     if (referrer) {
-      // Check if referrer has previous subscriptions
-      const referrerSubscriptions = await Subscription.find({
-        user: referrer._id,
-      });
-      console.log("Referrer Subscriptions:", referrerSubscriptions);
-
-      // Check if this is the referrer's first subscription
-      const isFirstSubscription = referrerSubscriptions.length === 0;
-      console.log("Is First Subscription:", isFirstSubscription);
-
-      // Set bonus rate based on referrer's subscription history
+      // Set bonus rate based on the user's subscription history
       const bonusRate = isFirstSubscription ? 0.15 : 0.005;
       const bonusAmount = amount * bonusRate;
+      console.log("Referrer:", userSubscriptions);
 
       referrer.accountBalance += bonusAmount;
       referrer.inviteCode.bonusAmount =
         (referrer.inviteCode.bonusAmount || 0) + bonusAmount;
       const date = new Date().toLocaleString();
+
+      await newSubscription.save();
+
+      user.userSubscription.push(newSubscription._id);
+      user.userTransaction.subscriptionsHistory.push(newSubscription._id);
 
       const bonus = new Bonus({
         user: referrer._id,
@@ -261,6 +258,19 @@ exports.getOneSubscription = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching subscription:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: error });
+  }
+};
+
+exports.getAllSubscriptions = async (req, res) => {
+  try {
+    const allSubscription = await Subscription.find();
+
+    res.status(200).json({
+      message: "All Subscriptions",
+      data: allSubscription,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err });
   }
 };
