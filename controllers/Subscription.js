@@ -29,32 +29,29 @@ exports.createSubscription = async (req, res) => {
       subscriptionDate,
     });
 
+    // Debugging logs to verify user and referrer
+    // console.log("Creating subscription for user:", user);
+
     // Check if the user creating the subscription has any existing subscriptions
     const userSubscriptions = await Subscription.find({ user: userId });
+    // console.log("User's existing subscriptions:", userSubscriptions);
     const isFirstSubscription = userSubscriptions.length === 0;
 
     // 🎁 Referral Bonus Logic
     const referrer = await User.findOne({
       "inviteCode.userInvited": user._id,
     });
-
     // console.log("Referrer:", referrer);
 
     if (referrer) {
       // Set bonus rate based on the user's subscription history
       const bonusRate = isFirstSubscription ? 0.15 : 0.005;
       const bonusAmount = amount * bonusRate;
-      console.log("Referrer:", userSubscriptions);
 
       referrer.accountBalance += bonusAmount;
       referrer.inviteCode.bonusAmount =
         (referrer.inviteCode.bonusAmount || 0) + bonusAmount;
       const date = new Date().toLocaleString();
-
-      await newSubscription.save();
-
-      user.userSubscription.push(newSubscription._id);
-      user.userTransaction.subscriptionsHistory.push(newSubscription._id);
 
       const bonus = new Bonus({
         user: referrer._id,
@@ -70,6 +67,10 @@ exports.createSubscription = async (req, res) => {
       await referrer.save();
     }
 
+    // Save the subscription and user
+    await newSubscription.save();
+    user.userSubscription.push(newSubscription._id);
+    user.userTransaction.subscriptionsHistory.push(newSubscription._id);
     await user.save();
 
     res.status(201).json({
@@ -232,35 +233,35 @@ exports.getUserSubscriptions = async (req, res) => {
   }
 };
 
-exports.getOneSubscription = async (req, res) => {
-  try {
-    const { subscriptionId } = req.params;
+// exports.getOneSubscription = async (req, res) => {
+//   try {
+//     const { subscriptionId } = req.params;
 
-    // Validate subscriptionId format
-    if (!mongoose.Types.ObjectId.isValid(subscriptionId)) {
-      return res
-        .status(400)
-        .json({ message: "Invalid subscription ID format" });
-    }
+//     // Validate subscriptionId format
+//     if (!mongoose.Types.ObjectId.isValid(subscriptionId)) {
+//       return res
+//         .status(400)
+//         .json({ message: "Invalid subscription ID format" });
+//     }
 
-    // Fetch the subscription and populate plan details
-    const subscription = await Subscription.findById(subscriptionId).populate(
-      "plan"
-    );
+//     // Fetch the subscription and populate plan details
+//     const subscription = await Subscription.findById(subscriptionId).populate(
+//       "plan"
+//     );
 
-    if (!subscription) {
-      return res.status(404).json({ message: "Subscription not found" });
-    }
+//     if (!subscription) {
+//       return res.status(404).json({ message: "Subscription not found" });
+//     }
 
-    res.status(200).json({
-      message: "Subscription retrieved successfully",
-      subscription,
-    });
-  } catch (error) {
-    console.error("Error fetching subscription:", error);
-    res.status(500).json({ message: error });
-  }
-};
+//     res.status(200).json({
+//       message: "Subscription retrieved successfully",
+//       subscription,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching subscription:", error);
+//     res.status(500).json({ message: error });
+//   }
+// };
 
 exports.getAllSubscriptions = async (req, res) => {
   try {
