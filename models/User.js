@@ -5,6 +5,7 @@ const UserSchema = new mongoose.Schema(
     userName: {
       type: String,
       required: true,
+      unique: true,
     },
     email: {
       type: String,
@@ -107,6 +108,14 @@ const UserSchema = new mongoose.Schema(
         ref: "Subscription",
       },
     ],
+
+    userTransactionTotal: {
+      depositTotal: { type: Number, default: 0 },
+      withdrawalTotal: { type: Number, default: 0 },
+      subscriptionsHistoryTotal: { type: Number, default: 0 },
+      bonusHistoryTotal: { type: Number, default: 0 },
+      dailyInterestHistoryTotal: { type: Number, default: 0 },
+    },
 
     userTransaction: {
       deposit: [

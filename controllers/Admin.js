@@ -166,12 +166,15 @@ exports.approveWithdrawal = async (req, res, next) => {
     withdrawal.status = "approved";
     await withdrawal.save();
 
+    const user = await User.findById(withdrawal.user._id);
+
+    user.userTransactionTotal.withdrawalTotal += withdrawal.amountCharges;
+
     if (withdrawal.status === "approved") {
       return res.status(400).json({ message: "Withdrawal already approved" });
     }
 
     // Deduct the user's account balance
-    const user = await User.findById(withdrawal.user._id);
     // if (user.accountBalance < withdrawal.amount) {
     //   return res
     //     .status(400)

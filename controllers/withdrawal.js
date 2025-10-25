@@ -66,7 +66,8 @@ const createWithdrawal = async (req, res) => {
     // Create withdrawal
     const withdrawals = new Withdrawal({
       user: user._id,
-      amount: amountAfterFee, // Store the amount after fee deduction
+      amount: amountAfterFee,
+      amountCharges: amount,
       method,
       walletAddress,
       accountName,
