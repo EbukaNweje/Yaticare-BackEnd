@@ -51,7 +51,7 @@ exports.createSubscription = async (req, res) => {
       referrer.accountBalance += bonusAmount;
       referrer.inviteCode.bonusAmount =
         (referrer.inviteCode.bonusAmount || 0) + bonusAmount;
-      const date = new Date().toLocaleString();
+      // const date = new Date().toLocaleString();
 
       const bonus = new Bonus({
         user: referrer._id,
@@ -59,7 +59,7 @@ exports.createSubscription = async (req, res) => {
         reason: isFirstSubscription
           ? "First Time Referral Bonus"
           : "Recurring Referral Bonus",
-        date,
+        date: subscriptionDate,
       });
 
       await bonus.save();
