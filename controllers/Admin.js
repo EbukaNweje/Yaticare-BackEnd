@@ -163,12 +163,11 @@ exports.approveWithdrawal = async (req, res, next) => {
     }
 
     // Update withdrawal status
-    withdrawal.status = "approved";
-    await withdrawal.save();
-
     if (withdrawal.status === "approved") {
       return res.status(400).json({ message: "Withdrawal already approved" });
     }
+    withdrawal.status = "approved";
+    await withdrawal.save();
 
     // Deduct the user's account balance
     // if (user.accountBalance < withdrawal.amount) {
