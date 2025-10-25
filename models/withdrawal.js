@@ -15,7 +15,7 @@ const WithdrawalSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    amountAfterCharges: {
+    amountCharges: {
       type: Number,
       required: true,
     },
