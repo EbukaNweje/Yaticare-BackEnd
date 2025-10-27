@@ -63,6 +63,7 @@ exports.createSubscription = async (req, res) => {
       });
 
       await bonus.save();
+      referrer.userTransactionTotal.bonusHistoryTotal += bonusAmount;
       referrer.userTransaction.bonusHistory.push(bonus._id);
       await referrer.save();
     }
@@ -91,20 +92,28 @@ cron.schedule("0 0 * * *", async () => {
       const user = await User.findById(subscription.user);
 
       if (user) {
-        const dailyBonus = subscription.amount * 0.2;
-        user.accountBalance += dailyBonus;
-        const date = new Date().toLocaleString();
+        const currentTime = new Date();
+        const subscriptionStartTime = new Date(subscription.subscriptionDate);
+        const timeElapsed = currentTime - subscriptionStartTime;
 
-        const interest = new DailyInterest({
-          user: user._id,
-          subscription: subscription._id,
-          amount: dailyBonus,
-          date,
-        });
+        // Check if 24 hours (86400000 milliseconds) have passed
+        if (timeElapsed >= 86400000) {
+          const dailyBonus = subscription.amount * 0.2;
+          user.accountBalance += dailyBonus;
+          user.userTransactionTotal.dailyInterestHistoryTotal += dailyBonus;
+          const date = new Date().toLocaleString();
 
-        await interest.save();
-        user.userTransaction.dailyInterestHistory.push(interest._id);
-        await user.save();
+          const interest = new DailyInterest({
+            user: user._id,
+            subscription: subscription._id,
+            amount: dailyBonus,
+            date,
+          });
+
+          await interest.save();
+          user.userTransaction.dailyInterestHistory.push(interest._id);
+          await user.save();
+        }
       }
 
       const currentDate = new Date();
