@@ -263,6 +263,12 @@ exports.updateUserEmail = async (req, res) => {
     const { id } = req.params;
     const { email } = req.body;
 
+    // Check if the email already exists in the database
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "Email is already in use" });
+    }
+
     const updatedUser = await User.findByIdAndUpdate(
       id,
       { email },
