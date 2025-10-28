@@ -228,6 +228,14 @@ exports.login = async (req, res, next) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
+    if (user.status === "blocked") {
+      return res
+        .status(403)
+        .json({ message: "Your account has been suspended" });
+    }
+
+    user.isLogin = "active";
+
     const token = jwt.sign({ id: user._id }, process.env.JWT);
 
     // Generate Referral Link
