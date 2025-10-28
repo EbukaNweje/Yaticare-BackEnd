@@ -16,5 +16,10 @@ router.put(
   SuperAdminAuth,
   Admin.approveWithdrawal
 );
+router.put("/updateuseremail/:id", SuperAdminAuth, Admin.updateUserEmail);
+router.put("/changeuserpassword/:id", SuperAdminAuth, Admin.changeUserPassword);
+router.put("/changeuserpin/:id", SuperAdminAuth, Admin.changeUserPin);
+router.put("/blockuser/:id", SuperAdminAuth, Admin.blockUser);
+router.put("/unblockuser/:id", SuperAdminAuth, Admin.unblockUser);
 
 module.exports = router;

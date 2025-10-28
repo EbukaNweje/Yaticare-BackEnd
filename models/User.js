@@ -89,13 +89,15 @@ const UserSchema = new mongoose.Schema(
     // },
 
     status: {
-      type: Boolean,
-      default: false,
+      type: String,
+      enum: ["active", "blocked"],
+      default: "active",
     },
 
     isLogin: {
-      type: Boolean,
-      default: false,
+      type: String,
+      enum: ["active", "inactive"],
+      default: "inactive",
     },
 
     userEmailVerify: {
