@@ -1,3 +1,4 @@
+const Subscription = require("../models/Subscription");
 const User = require("../models/User");
 const createError = require("../utilities/error");
 // const paystack = require('paystack')(process.env.PAYSTACK_SECRET_KEY);
