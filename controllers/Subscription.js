@@ -36,7 +36,18 @@ exports.createSubscription = async (req, res) => {
     const userSubscriptions = await Subscription.find({ user: userId });
     // console.log("User's existing subscriptions:", userSubscriptions);
     const isFirstSubscription = userSubscriptions.length === 0;
+    // Reject if amount is less than first subscription
+    if (!isFirstSubscription) {
+      const firstSub = await Subscription.findOne({ user: userId }).sort({
+        subscriptionDate: 1,
+      });
 
+      if (firstSub && amount < firstSub.amount) {
+        return res.status(400).json({
+          message: `You cannot subscribe with an amount less than your first subscription of $${firstSub.amount}`,
+        });
+      }
+    }
     // 🎁 Referral Bonus Logic
     const referrer = await User.findOne({
       "inviteCode.userInvited": user._id,
