@@ -470,13 +470,17 @@ exports.totalBlockedAndActiveUsers = async (req, res) => {
 
 exports.totalActiveSubscribers = async (req, res) => {
   try {
-    const activeSubscribersCount = await Subscription.countDocuments({
-      status: "active",
-    });
+    // Find subscriptions with status "active"
+    const activeSubscriptions = await Subscription.find({ status: "active" });
+
+    // Extract unique user IDs from the active subscriptions
+    const uniqueUserIds = [
+      ...new Set(activeSubscriptions.map((sub) => sub.user)),
+    ];
 
     res.status(200).json({
       message: "Total active subscribers counted successfully",
-      activeSubscribersCount,
+      activeSubscribersCount: uniqueUserIds.length,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
