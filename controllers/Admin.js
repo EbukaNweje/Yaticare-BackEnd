@@ -374,3 +374,110 @@ exports.unblockUser = async (req, res, next) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+exports.totalDalyDeposit = async (req, res) => {
+  try {
+    const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
+
+    const dailyDeposits = await depositModel.find({ depositDate: today });
+
+    const totalAmount = dailyDeposits.reduce(
+      (sum, deposit) => sum + deposit.amount,
+      0
+    );
+
+    res.status(200).json({
+      message: "Total daily deposits calculated successfully",
+      date: today,
+      totalAmount,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.totalDailyWithdrawals = async (req, res) => {
+  try {
+    const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
+
+    const dailyWithdrawals = await Withdrawal.find({ withdrawalDate: today });
+
+    const totalAmount = dailyWithdrawals.reduce(
+      (sum, withdrawal) => sum + withdrawal.amount,
+      0
+    );
+
+    res.status(200).json({
+      message: "Total daily withdrawals calculated successfully",
+      date: today,
+      totalAmount,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.totalPendingDeposits = async (req, res) => {
+  try {
+    // Count the number of deposits with status "pending"
+    const pendingCount = await depositModel.countDocuments({
+      status: "pending",
+    });
+
+    res.status(200).json({
+      message: "Total pending deposits counted successfully",
+      pendingCount,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.totalPendingWithdrawals = async (req, res) => {
+  try {
+    // Count the number of withdrawals with status "pending"
+    const pendingCount = await Withdrawal.countDocuments({
+      status: "pending",
+    });
+
+    res.status(200).json({
+      message: "Total pending withdrawals counted successfully",
+      pendingCount,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.totalBlockedAndActiveUsers = async (req, res) => {
+  try {
+    // Count the number of blocked users
+    const blockedCount = await User.countDocuments({ status: "blocked" });
+
+    // Count the number of active users
+    const activeCount = await User.countDocuments({ status: "active" });
+
+    res.status(200).json({
+      message: "Total blocked and active users counted successfully",
+      blockedCount,
+      activeCount,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.totalActiveSubscribers = async (req, res) => {
+  try {
+    const activeSubscribersCount = await Subscription.countDocuments({
+      status: "active",
+    });
+
+    res.status(200).json({
+      message: "Total active subscribers counted successfully",
+      activeSubscribersCount,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

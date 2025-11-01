@@ -25,5 +25,11 @@ router.patch(
 router.patch("/changeuserpin/:id", SuperAdminAuth, Admin.changeUserPin);
 router.patch("/blockuser/:id", SuperAdminAuth, Admin.blockUser);
 router.patch("/unblockuser/:id", SuperAdminAuth, Admin.unblockUser);
+router.get("/totaldailydeposit", Admin.totalDalyDeposit);
+router.get("/totaldailywithdrawals", Admin.totalDailyWithdrawals);
+router.get("/totalpendingdeposits", Admin.totalPendingDeposits);
+router.get("/totalpendingwithdrawals", Admin.totalPendingWithdrawals);
+router.get("/totalblockedandactiveusers", Admin.totalBlockedAndActiveUsers);
+router.get("/totalactivesubscribers", Admin.totalActiveSubscribers);
 
 module.exports = router;
