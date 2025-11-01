@@ -94,7 +94,7 @@ exports.changePhoneNumber = async (req, res, next) => {
 
 exports.totalReferredActiveSubscribers = async (req, res) => {
   try {
-    const userId = req.user.id; // Assuming the authenticated user's ID is available in req.user
+    const { userId } = req.params; // Assuming the authenticated user's ID is available in req.user
     const user = await User.findById(userId);
 
     if (!user || !user.referralLink) {
