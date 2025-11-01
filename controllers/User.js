@@ -92,38 +92,59 @@ exports.changePhoneNumber = async (req, res, next) => {
   }
 };
 
-// exports.callback = async (req, res, next) => {
-//     try {
-//         const reference = req.query.reference;
-//         const payment = await paystack.transaction.verify(reference);
+exports.totalReferredActiveSubscribers = async (req, res) => {
+  try {
+    const userId = req.user.id; // Assuming the authenticated user's ID is available in req.user
+    const user = await User.findById(userId);
 
-//         if (payment.data.status === 'success') {
-//             // Update the user's balance
-//             const user = await User.findById(payment.data.metadata.user_id);
-//             user.balance += payment.data.amount / 100; // Convert from kobo
-//             await user.save();
+    if (!user || !user.referralLink) {
+      return res.status(400).json({ message: "User referral link not found" });
+    }
 
-//             res.status(200).json({ message: "Deposit successful", data: user });
-//         } else {
-//             res.status(400).json({ message: "Payment failed" });
-//         }
-//     } catch (error) {
-//         next(error);
-//     }
-// }
+    const referralLink = user.referralLink;
 
-// exports.deposit = async (req, res, next) => {
-//     try {
-//         const { id } = req.params;
-//         const { amount } = req.body;
-//         const user = await User.findById(id);
-//         if (!user) {
-//             return next(createError(400, "User not found"));
-//         }
-//         user.balance += amount;
-//         await user.save();
-//         res.status(200).json({ message: "Deposit successful", data: user });
-//     } catch (error) {
-//         next(error);
-//     }
-// }
+    // Find users who signed up using the referral link
+    const referredUsers = await User.find({ referralLink }).select("_id");
+
+    // Extract user IDs
+    const userIds = referredUsers.map((user) => user._id);
+
+    // Find active subscriptions for these users
+    const activeSubscriptions = await Subscription.aggregate([
+      { $match: { status: "active", user: { $in: userIds } } },
+      { $group: { _id: "$user" } }, // Group by user ID to ensure uniqueness
+    ]);
+
+    res.status(200).json({
+      message: "Total referred active subscribers counted successfully",
+      totalReferredActiveSubscribers: activeSubscriptions.length,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// exports.totalReferredActiveSubscribers = async (req, res) => {
+//   try {
+//     const { referralLink } = req.query; // Assuming referralLink is passed as a query parameter
+
+//     // Find users who signed up using the referral link
+//     const referredUsers = await User.find({ referralLink }).select("_id");
+
+//     // Extract user IDs
+//     const userIds = referredUsers.map((user) => user._id);
+
+//     // Find active subscriptions for these users
+//     const activeSubscriptions = await Subscription.aggregate([
+//       { $match: { status: "active", user: { $in: userIds } } },
+//       { $group: { _id: "$user" } }, // Group by user ID to ensure uniqueness
+//     ]);
+
+//     res.status(200).json({
+//       message: "Total referred active subscribers counted successfully",
+//       totalReferredActiveSubscribers: activeSubscriptions.length,
+//     });
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// };
