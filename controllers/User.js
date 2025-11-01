@@ -97,11 +97,11 @@ exports.totalReferredActiveSubscribers = async (req, res) => {
     const { userId } = req.params; // Assuming the authenticated user's ID is available in req.user
     const user = await User.findById(userId);
 
-    if (!user || !user.referralLink) {
+    if (!user || !user.inviteCode.code) {
       return res.status(400).json({ message: "User referral link not found" });
     }
 
-    const referralLink = user.referralLink;
+    const referralLink = user.inviteCode.code;
 
     // Find users who signed up using the referral link
     const referredUsers = await User.find({ referralLink }).select("_id");
