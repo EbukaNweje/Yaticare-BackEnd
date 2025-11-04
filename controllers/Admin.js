@@ -425,7 +425,7 @@ exports.totalDailyWithdrawals = async (req, res) => {
     end.setHours(23, 59, 59, 999); // Today at 23:59:59
 
     const dailyWithdrawals = await Withdrawal.find({
-      withdrawalDate: { $gte: start, $lte: end },
+      withdrawalDateChecked: { $gte: start, $lte: end },
     });
 
     const totalAmount = dailyWithdrawals.reduce(
