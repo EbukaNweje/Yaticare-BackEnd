@@ -95,7 +95,7 @@ exports.changePhoneNumber = async (req, res, next) => {
 
 exports.totalReferredActiveSubscribers = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.params.id;
     const user = await User.findById(userId);
 
     if (!user || !user.inviteCode.code) {
