@@ -34,6 +34,10 @@ const WithdrawalSchema = new mongoose.Schema(
     withdrawalDate: {
       type: String,
     },
+    withdrawalDateChecked: {
+      type: Date,
+      required: true,
+    },
     bankName: {
       type: String,
     },

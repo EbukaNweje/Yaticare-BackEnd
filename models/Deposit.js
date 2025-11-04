@@ -33,6 +33,10 @@ const depositSchema = new mongoose.Schema(
     depositDate: {
       type: String,
     },
+    depositDateChecked: { type: Date, required: true },
+    depositWallet: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

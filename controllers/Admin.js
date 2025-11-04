@@ -358,6 +358,19 @@ exports.blockUser = async (req, res, next) => {
   }
 };
 
+// exports.DeletedUserCount = async (req, res) => {
+//   try {
+//     const deletedUserCount = await User.countDocuments({ isDeleted: true });
+
+//     res.status(200).json({
+//       message: "Deleted user count retrieved successfully",
+//       deletedUserCount,
+//     });
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// };
+
 exports.unblockUser = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -378,9 +391,15 @@ exports.unblockUser = async (req, res, next) => {
 
 exports.totalDalyDeposit = async (req, res) => {
   try {
-    const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
+    const start = new Date();
+    start.setHours(0, 0, 0, 0); // Today at 00:00:00
 
-    const dailyDeposits = await depositModel.find({ depositDate: today });
+    const end = new Date();
+    end.setHours(23, 59, 59, 999); // Today at 23:59:59
+
+    const dailyDeposits = await depositModel.find({
+      depositDateChecked: { $gte: start, $lte: end },
+    });
 
     const totalAmount = dailyDeposits.reduce(
       (sum, deposit) => sum + deposit.amount,
@@ -389,7 +408,7 @@ exports.totalDalyDeposit = async (req, res) => {
 
     res.status(200).json({
       message: "Total daily deposits calculated successfully",
-      date: today,
+      date: start.toDateString(),
       totalAmount,
     });
   } catch (err) {
@@ -399,9 +418,15 @@ exports.totalDalyDeposit = async (req, res) => {
 
 exports.totalDailyWithdrawals = async (req, res) => {
   try {
-    const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
+    const start = new Date();
+    start.setHours(0, 0, 0, 0); // Today at 00:00:00
 
-    const dailyWithdrawals = await Withdrawal.find({ withdrawalDate: today });
+    const end = new Date();
+    end.setHours(23, 59, 59, 999); // Today at 23:59:59
+
+    const dailyWithdrawals = await Withdrawal.find({
+      withdrawalDate: { $gte: start, $lte: end },
+    });
 
     const totalAmount = dailyWithdrawals.reduce(
       (sum, withdrawal) => sum + withdrawal.amount,
@@ -410,7 +435,7 @@ exports.totalDailyWithdrawals = async (req, res) => {
 
     res.status(200).json({
       message: "Total daily withdrawals calculated successfully",
-      date: today,
+      date: start.toDateString(),
       totalAmount,
     });
   } catch (err) {

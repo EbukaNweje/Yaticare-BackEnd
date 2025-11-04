@@ -73,6 +73,7 @@ const createWithdrawal = async (req, res) => {
       accountName,
       status: "pending",
       withdrawalDate: withdrawalDate,
+      withdrawalDateChecked: new Date(),
     });
 
     await withdrawals.save();
