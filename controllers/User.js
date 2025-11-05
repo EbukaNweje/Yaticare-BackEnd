@@ -95,8 +95,10 @@ exports.changePhoneNumber = async (req, res, next) => {
 
 exports.totalReferredActiveSubscribers = async (req, res) => {
   try {
-    const userId = req.params.id;
+    const userId = req.params.userId;
     const user = await User.findById(userId);
+
+    console.log("Referred user IDs:", userId);
 
     if (!user || !user.inviteCode.code) {
       return res.status(400).json({ message: "User referral link not found" });
@@ -107,8 +109,6 @@ exports.totalReferredActiveSubscribers = async (req, res) => {
       "inviteCode.userInvited": userId,
     }).select("_id");
     const userIds = referredUsers.map((user) => user._id);
-
-    console.log("Referred user IDs:", userIds);
 
     const activeSubscriptions = await Subscription.aggregate([
       { $match: { status: { $regex: /^active$/i }, user: { $in: userIds } } },
