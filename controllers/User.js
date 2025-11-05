@@ -98,20 +98,21 @@ exports.totalReferredActiveSubscribers = async (req, res) => {
     const userId = req.params.userId;
     const user = await User.findById(userId);
 
-    console.log("Referred user IDs:", userId);
-
-    if (!user || !user.inviteCode.code) {
-      return res.status(400).json({ message: "User referral link not found" });
+    if (!user || !user.inviteCode || !user.inviteCode.userInvited) {
+      return res.status(400).json({ message: "User referral data not found" });
     }
 
-    // Find users who were invited by this user
-    const referredUsers = await User.find({
-      "inviteCode.userInvited": userId,
-    }).select("_id");
-    const userIds = referredUsers.map((user) => user._id);
+    const referredUserIds = user.inviteCode.userInvited;
+
+    // console.log("Referred user IDs:", referredUserIds);
 
     const activeSubscriptions = await Subscription.aggregate([
-      { $match: { status: { $regex: /^active$/i }, user: { $in: userIds } } },
+      {
+        $match: {
+          status: { $regex: /^active$/i },
+          user: { $in: referredUserIds },
+        },
+      },
       { $group: { _id: "$user" } },
     ]);
 
