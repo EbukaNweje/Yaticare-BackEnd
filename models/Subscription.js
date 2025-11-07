@@ -20,6 +20,10 @@ const SubscriptionSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
+    isSubscriptionRecycle: {
+      type: Boolean,
+      default: false,
+    },
     status: {
       type: String,
       enum: ["active", "expired"],
@@ -31,6 +35,10 @@ const SubscriptionSchema = new mongoose.Schema(
     },
     subscriptionDate: {
       type: String,
+    },
+    lastBonusAt: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: true }

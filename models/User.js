@@ -94,6 +94,11 @@ const UserSchema = new mongoose.Schema(
       default: "active",
     },
 
+    isSubscribed: {
+      type: Boolean,
+      default: false,
+    },
+
     isLogin: {
       type: String,
       enum: ["active", "inactive"],

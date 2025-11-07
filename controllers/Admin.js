@@ -509,3 +509,15 @@ exports.totalActiveSubscribers = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+exports.getAdmins = async (req, res, next) => {
+  try {
+    const admins = await Admin.find().select("-password");
+    res.status(200).json({
+      message: "Admins retrieved successfully",
+      admins,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

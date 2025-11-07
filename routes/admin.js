@@ -31,5 +31,6 @@ router.get("/totalpendingdeposits", Admin.totalPendingDeposits);
 router.get("/totalpendingwithdrawals", Admin.totalPendingWithdrawals);
 router.get("/totalblockedandactiveusers", Admin.totalBlockedAndActiveUsers);
 router.get("/totalactivesubscribers", Admin.totalActiveSubscribers);
+router.get("/getadmins", Admin.getAdmins);
 
 module.exports = router;

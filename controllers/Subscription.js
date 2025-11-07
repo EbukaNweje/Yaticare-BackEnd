@@ -34,17 +34,16 @@ exports.createSubscription = async (req, res) => {
 
     // Check if the user creating the subscription has any existing subscriptions
     const userSubscriptions = await Subscription.find({ user: userId });
-    // console.log("User's existing subscriptions:", userSubscriptions);
     const isFirstSubscription = userSubscriptions.length === 0;
-    // Reject if amount is less than first subscription
+
     if (!isFirstSubscription) {
-      const firstSub = await Subscription.findOne({ user: userId }).sort({
-        subscriptionDate: 1,
+      const lastSub = await Subscription.findOne({ user: userId }).sort({
+        subscriptionDate: -1,
       });
 
-      if (firstSub && amount < firstSub.amount) {
+      if (lastSub && amount < lastSub.amount) {
         return res.status(400).json({
-          message: `You cannot subscribe with an amount less than your first subscription of $${firstSub.amount}`,
+          message: `You cannot subscribe with an amount less than your last subscription of $${lastSub.amount}`,
         });
       }
     }
@@ -81,6 +80,7 @@ exports.createSubscription = async (req, res) => {
 
     // Save the subscription and user
     await newSubscription.save();
+    user.isSubscribed = true;
     user.userSubscription.push(newSubscription._id);
     user.userTransaction.subscriptionsHistory.push(newSubscription._id);
     await user.save();
@@ -101,54 +101,66 @@ cron.schedule("0 0 * * *", async () => {
 
     for (const subscription of activeSubscriptions) {
       const user = await User.findById(subscription.user);
+      if (!user) continue;
 
-      if (user) {
-        const currentTime = new Date();
-        const subscriptionStartTime = new Date(subscription.subscriptionDate);
-        const timeElapsed = currentTime - subscriptionStartTime;
+      const now = new Date();
 
-        // Check if 24 hours (86400000 milliseconds) have passed
-        if (timeElapsed >= 86400000) {
-          const dailyBonus = subscription.amount * 0.2;
-          user.accountBalance += dailyBonus;
-          user.userTransactionTotal.dailyInterestHistoryTotal += dailyBonus;
-          const date = new Date().toLocaleString();
+      // Parse subscriptionDate safely
+      const subscriptionStartTime = moment(
+        subscription.subscriptionDate,
+        "M/D/YYYY, h:mm:ss A"
+      ).toDate();
+      const lastBonusTime = subscription.lastBonusAt || subscriptionStartTime;
+      const hoursSinceLastBonus = (now - new Date(lastBonusTime)) / 3600000;
 
-          const interest = new DailyInterest({
-            user: user._id,
-            subscription: subscription._id,
-            amount: dailyBonus,
-            date,
-          });
-
-          await interest.save();
-          user.userTransaction.dailyInterestHistory.push(interest._id);
-          await user.save();
-        }
-      }
-
-      const currentDate = new Date();
+      // Calculate one day before end
       const oneDayBeforeEnd = new Date(subscription.endDate);
       oneDayBeforeEnd.setDate(oneDayBeforeEnd.getDate() - 1);
+      const isLastDay = now.toDateString() === oneDayBeforeEnd.toDateString();
 
-      if (
-        currentDate.toDateString() === oneDayBeforeEnd.toDateString() &&
-        subscription.status === "active"
-      ) {
-        res.status(400).json({
-          message: `Notify user ${subscription.user} to recycle their subscription.`,
+      // ✅ Send reminder email one day before expiration
+      if (isLastDay && !subscription.isSubscriptionRecycle) {
+        await sendEmail({
+          to: user.email,
+          subject: "Your subscription is about to expire",
+          text: `Hi ${user.userName}, your subscription will expire tomorrow. Please recycle to continue enjoying your benefits.`,
         });
+
+        subscription.isSubscriptionRecycle = true;
+        await subscription.save();
       }
 
-      if (currentDate >= subscription.endDate) {
+      // ✅ Add daily bonus if not on last day
+      if (!isLastDay && hoursSinceLastBonus >= 24) {
+        const dailyBonus = subscription.amount * 0.2;
+        user.accountBalance += dailyBonus;
+        user.userTransactionTotal.dailyInterestHistoryTotal += dailyBonus;
+
+        const interest = new DailyInterest({
+          user: user._id,
+          subscription: subscription._id,
+          amount: dailyBonus,
+          date: now.toLocaleString(),
+        });
+
+        await interest.save();
+        user.userTransaction.dailyInterestHistory.push(interest._id);
+        await user.save();
+
+        subscription.lastBonusAt = now;
+        await subscription.save();
+      }
+
+      // ✅ Expire subscription if end date reached
+      if (now >= subscription.endDate) {
         subscription.status = "expired";
         await subscription.save();
       }
     }
+
+    console.log("✅ Daily subscription cron job completed.");
   } catch (error) {
-    res.status(400).json({
-      message: `Error in daily subscription task:${error.message}`,
-    });
+    console.error("❌ Cron job error:", error.message);
   }
 });
 
@@ -157,57 +169,63 @@ exports.recycleSubscription = async (req, res) => {
     const { subscriptionId } = req.body;
 
     const subscription = await Subscription.findById(subscriptionId);
-    if (!subscription) return res.status(404).json({ message: "Not found" });
+    if (!subscription)
+      return res.status(404).json({ message: "Subscription not found" });
 
     const currentDate = new Date();
     const oneDayBeforeEnd = new Date(subscription.endDate);
     oneDayBeforeEnd.setDate(oneDayBeforeEnd.getDate() - 1);
 
-    if (
-      subscription.status !== "expired" &&
-      currentDate.toDateString() !== oneDayBeforeEnd.toDateString()
-    ) {
+    const isSecondToLastDay =
+      currentDate.toDateString() === oneDayBeforeEnd.toDateString();
+    const isExpired = subscription.status === "expired";
+
+    if (!isExpired && !isSecondToLastDay) {
       return res.status(400).json({
-        message: "Can only recycle on second-to-last day or after expiration",
+        message:
+          "You can only recycle on the second-to-last day or after expiration.",
       });
     }
 
+    // Calculate original duration
     const durationInDays = Math.ceil(
-      (subscription.endDate - subscription.startDate) / (1000 * 60 * 60 * 24)
+      (new Date(subscription.endDate) - new Date(subscription.startDate)) /
+        (1000 * 60 * 60 * 24)
     );
 
+    // Reset subscription period
+    const newStartDate = new Date();
     const newEndDate = new Date();
-    newEndDate.setDate(newEndDate.getDate() + durationInDays);
+    newEndDate.setDate(newStartDate.getDate() + durationInDays);
 
-    subscription.startDate = new Date();
+    subscription.startDate = newStartDate;
     subscription.endDate = newEndDate;
     subscription.status = "active";
+    subscription.isSubscriptionRecycle = true;
+    subscription.lastBonusAt = null; // Reset bonus tracking
 
     await subscription.save();
 
     // 💸 0.5% Commission to Referrer
     const user = await User.findById(subscription.user);
-    const referrer = await User.findOne({
-      "inviteCode.userInvited": user._id,
-    });
+    const referrer = await User.findOne({ "inviteCode.userInvited": user._id });
 
     if (referrer) {
       const commission = subscription.amount * 0.005;
       referrer.accountBalance += commission;
       referrer.inviteCode.bonusAmount =
         (referrer.inviteCode.bonusAmount || 0) + commission;
-      await referrer.save();
-      const date = new Date().toLocaleString();
 
       const bonus = new Bonus({
         user: referrer._id,
         amount: commission,
         reason: "Recycle Bonus",
-        date,
+        date: new Date().toLocaleString(),
       });
 
       await bonus.save();
       referrer.userTransaction.bonusHistory.push(bonus._id);
+      referrer.userTransactionTotal.bonusHistoryTotal += commission;
       await referrer.save();
     }
 
@@ -216,6 +234,7 @@ exports.recycleSubscription = async (req, res) => {
       subscription,
     });
   } catch (error) {
+    console.error("Recycle error:", error);
     res.status(500).json({ message: error.message });
   }
 };
