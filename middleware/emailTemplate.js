@@ -20,13 +20,13 @@ const baseEmailTemplate = (title, mainContent, accentColor = PRIMARY_BLUE) => {
   const containerStyle = `
     max-width: 600px;
     margin: 0 auto;
-    background-color: rgba(24, 24, 24, 0.4);
+    background-color: rgba(255, 254, 254, 1);
     font-family: 'Poppins', sans-serif;
     padding: 20px 0;
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e0e0e0;
+    border: 1px solid rgba(0, 38, 17, 0.6);
   `;
   const footerBgStyle = `
     background: url(${WATERMARK_URL}) center / cover no-repeat;
