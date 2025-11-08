@@ -64,7 +64,7 @@ exports.register = async (req, res, next) => {
         await referrer.save();
 
         const emailDetails = {
-          email: newUser.email,
+          email: referrer.email,
           subject: "You've Got A New Referral",
           html: referrial(referrer),
         };
