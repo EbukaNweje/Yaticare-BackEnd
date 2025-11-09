@@ -10,6 +10,7 @@ const {
   contributionCycleStartsEmail,
   subscriptionRecycledEmail,
 } = require("../middleware/emailTemplate");
+const { sendEmail } = require("../utilities/brevo");
 
 exports.createSubscription = async (req, res) => {
   try {

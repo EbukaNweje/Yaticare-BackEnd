@@ -254,7 +254,7 @@ exports.depositRequestEmail = (userData) => {
   return baseEmailTemplate("Deposit Request Initiated", mainContent);
 };
 
-exports.depositRequestEmail = (userData, amount) => {
+exports.depositCompletedEmail = (userData, amount) => {
   const mainContent = `
     <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">PIN Changed Successfully</h1>
     <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>

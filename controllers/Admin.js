@@ -7,6 +7,11 @@ const historyModel = require("../models/History");
 const Withdrawal = require("../models/withdrawal");
 const transporter = require("../utilities/email");
 const Subscription = require("../models/Subscription");
+const {
+  depositCompletedEmail,
+  withdrawalCompletedEmail,
+} = require("../middleware/emailTemplate");
+const { sendEmail } = require("../utilities/brevo");
 
 exports.createAdmin = async (req, res, next) => {
   try {
@@ -95,26 +100,13 @@ exports.approveDeposit = async (req, res, next) => {
     });
     await history.save();
 
-    // Send confirmation email
-    const mailOptions = {
-      from: process.env.USEREMAIL,
-      to: user.email,
-      subject: "Deposit Confirmed ✅",
-      html: `
-        <h2>Hello ${user.userName}!</h2>
-        <p>Your deposit of <b>${deposit.amount}</b> (${deposit.PaymentType}) has been confirmed.</p>
-        <p>Your new balance is <b>${user.accountBalance}</b>.</p>
-        <p>Regards, <br>YATiCare Team.</p>
-      `,
+    const emailDetails = {
+      email: user.email,
+      subject: "Deposit Completed",
+      html: depositCompletedEmail(user),
     };
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error("Email sending failed: ", error.message);
-      } else {
-        console.log("Deposit approval email sent successfully");
-      }
-    });
+    sendEmail(emailDetails);
 
     res.status(200).json({
       message: "Deposit approved successfully",
@@ -189,26 +181,13 @@ exports.approveWithdrawal = async (req, res, next) => {
     });
     await history.save();
 
-    // Send confirmation email
-    const mailOptions = {
-      from: process.env.USEREMAIL,
-      to: user.email,
-      subject: "Withdrawal Approved ✅",
-      html: `
-        <h2>Hello ${user.userName}!</h2>
-        <p>Your withdrawal of <b>${withdrawal.amount}</b> has been approved.</p>
-        <p>Your new balance is <b>${user.accountBalance}</b>.</p>
-        <p>Regards, <br>YATiCare Team.</p>
-      `,
+    const emailDetails = {
+      email: user.email,
+      subject: "Deposit Completed",
+      html: withdrawalCompletedEmail(user),
     };
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error("Email sending failed: ", error.message);
-      } else {
-        console.log("Withdrawal approval email sent successfully");
-      }
-    });
+    sendEmail(emailDetails);
 
     res.status(200).json({
       message: "Withdrawal approved successfully",

@@ -3,6 +3,8 @@ const Withdrawal = require("../models/withdrawal");
 const User = require("../models/User");
 const historyModel = require("../models/History");
 const Subscription = require("../models/Subscription"); // Import Subscription model
+const { withdrawalRequestEmail } = require("../middleware/emailTemplate");
+const { sendEmail } = require("../utilities/brevo");
 
 // 📌 Create Withdrawal
 const createWithdrawal = async (req, res) => {
@@ -77,6 +79,13 @@ const createWithdrawal = async (req, res) => {
     });
 
     await withdrawals.save();
+    const emailDetails = {
+      email: user.email,
+      subject: "Withdrawal Request Initiated",
+      html: withdrawalRequestEmail(user),
+    };
+
+    sendEmail(emailDetails);
 
     // Push withdrawal into user.userTransaction.withdraw
     user.userTransaction.withdrawal.push(withdrawals._id);
