@@ -83,13 +83,14 @@ exports.createSubscription = async (req, res) => {
       referrer.userTransactionTotal.bonusHistoryTotal += bonusAmount;
       referrer.userTransaction.bonusHistory.push(bonus._id);
       await referrer.save();
-      const emailDetails = {
-        email: user.email,
-        subject: "Referral Commission Earned",
-        html: referralCommissionEmail(user, bonusAmount),
-      };
-      sendEmail(emailDetails);
     }
+
+    const emailDetails2 = {
+      email: user.email,
+      subject: "Referral Commission Earned",
+      html: referralCommissionEmail(user, bonusAmount),
+    };
+    sendEmail(emailDetails2);
 
     // Save the subscription and user
     await newSubscription.save();
