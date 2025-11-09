@@ -147,3 +147,96 @@ exports.registerEmail = (userData) => {
   `;
   return baseEmailTemplate("Welcome to YatiCare", mainContent);
 };
+exports.loginEmail = (userData) => {
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Welcome To YatiCare</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      You’ve logged into your YATiCare account. If this wasn’t you, secure your account immediately.
+    </p>
+    <p style="font-size: 16px; margin-top: 20px; color: #333;">Regards,</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
+  `;
+  return baseEmailTemplate("Recent Login Activity", mainContent);
+};
+exports.forgetPasswordEmail = (userData, resetLink) => {
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Password Reset Request</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      You requested a password reset. Click the button below to update your credentials:
+    </p>
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="${resetLink}" style="background-color: ${PRIMARY_BLUE}; color: #fff; padding: 12px 20px; border-radius: 6px; font-weight: 600; display: inline-block;">
+        Reset Password
+      </a>
+    </div>
+    <p style="font-size: 14px; color: #999;">
+      If you didn’t request this, please ignore this email.
+    </p>
+    <p style="font-size: 16px; margin-top: 20px; color: #333;">Regards,</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
+  `;
+  return baseEmailTemplate("Password Reset Request", mainContent);
+};
+
+exports.passwordChangeEmail = (userData) => {
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Welcome To YatiCare</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      Your YATiCare password was changed successfully. Contact us if you didn’t make this change.  
+    </p>
+    <p style="font-size: 16px; margin-top: 20px; color: #333;">Regards,</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
+  `;
+  return baseEmailTemplate("Password Change Success", mainContent);
+};
+
+exports.changePasswordEmail = (userData) => {
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Password Changed Successfully</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      Your password has been changed successfully. If this was you, no further action is needed.
+    </p>
+    <p style="font-size: 14px; color: #999;">
+      If you did not initiate this change, please reset your password immediately or contact our support team.
+    </p>
+    <p style="font-size: 16px; margin-top: 20px; color: #333;">Regards,</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
+  `;
+  return baseEmailTemplate("Password Change Confirmation", mainContent);
+};
+
+exports.pinCreatedEmail = (userData) => {
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">PIN Created Successfully</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      Your transaction PIN has been created successfully. You can now securely authorize payments and access sensitive features.
+    </p>
+    <p style="font-size: 14px; color: #999;">
+      If you did not initiate this action, please update your PIN immediately or contact support.
+    </p>
+    <p style="font-size: 16px; margin-top: 20px; color: #333;">Regards,</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
+  `;
+  return baseEmailTemplate("PIN Created Successfully", mainContent);
+};
+
+exports.pinChangedEmail = (userData) => {
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">PIN Changed Successfully</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      Your transaction PIN has been changed successfully. You can now continue using YATiCare securely.
+    </p>
+    <p style="font-size: 14px; color: #999;">
+      If you did not initiate this change, please reset your PIN immediately or contact our support team.
+    </p>
+    <p style="font-size: 16px; margin-top: 20px; color: #333;">Regards,</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
+  `;
+  return baseEmailTemplate("PIN Change Confirmation", mainContent);
+};

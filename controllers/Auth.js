@@ -5,7 +5,16 @@ const { validationResult } = require("express-validator");
 const transporter = require("../utilities/email");
 const createError = require("../utilities/error");
 const otp = require("otp-generator");
-const { referrial, registerEmail } = require("../middleware/emailTemplate");
+const {
+  referrial,
+  registerEmail,
+  loginEmail,
+  forgetPasswordEmail,
+  passwordChangeEmail,
+  changePasswordEmail,
+  pinCreatedEmail,
+  pinChangedEmail,
+} = require("../middleware/emailTemplate");
 const { sendEmail } = require("../utilities/brevo");
 const getDate = new Date().getFullYear();
 
@@ -123,74 +132,13 @@ exports.login = async (req, res, next) => {
     const referralLink = `https://ya-ti-pauy.vercel.app/#/auth/Sign-up?referralCode=${user.inviteCode.code}`;
 
     await user.save();
-
-    const subject = "Recent Login Activity";
-    const emailText = `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Document</title>
-        <style>
-            body {
-                margin: 0;
-                padding: 0;
-                font-family: Arial, Helvetica, sans-serif;
-                background-color: whitesmoke;
-            }
-            .container {
-                width: 100%;
-                background-color: whitesmoke;
-                padding: 0;
-                margin: 0;
-            }
-            .header, .footer {
-                width: 100%;
-                background-color: #333;
-                color: #fff;
-                text-align: center;
-                padding: 10px;
-            }
-            .content {
-                padding: 20px;
-            }
-        </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>Welcome To YatiCare</h1>
-                </div>
-                <div class="content">
-                    <p>Hello ${user.userName},</p>
-                    <p>You’ve logged into your YATiCare account. If this wasn’t you, secure your account immediately.</p>
-                </div>
-                <div class="content">
-                    <p>Regards,</p>
-                    <p><b>YATiCare Team.</b></p>
-                </div>
-                <div class="footer">
-                    <p>&copy; ${getDate} YaTiCare. All rights reserved.</p>
-                </div>
-            </div>
-        </body>
-        </html>
-        `;
-
-    const mailOptions = {
-      from: process.env.USEREMAIL,
-      to: email,
-      subject,
-      html: emailText,
+    const emailDetails = {
+      email: user.email,
+      subject: "Recent Login Activity",
+      html: loginEmail(user),
     };
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        return next(createError(400, error.message));
-      }
-      console.log("Email sent: " + info.response);
-    });
+    sendEmail(emailDetails);
 
     res.status(200).json({
       message: "User logged in successfully",
@@ -230,72 +178,19 @@ exports.forgetPassword = async (req, res, next) => {
       return next(createError(400, "User not found"));
     }
 
-    const subject = "Reset Password Notification";
-    const emailText = `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Document</title>
-        <style>
-            body {
-                margin: 0;
-                padding: 0;
-                font-family: Arial, Helvetica, sans-serif;
-                background-color: whitesmoke;
-            }
-            .container {
-                width: 100%;
-                background-color: whitesmoke;
-                padding: 0;
-                margin: 0;
-            }
-            .header, .footer {
-                width: 100%;
-                background-color: #333;
-                color: #fff;
-                text-align: center;
-                padding: 10px;
-            }
-            .content {
-                padding: 20px;
-            }
-        </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>Reset Password Notification</h1>
-                </div>
-                <div class="content">
-                    <p>Hello ${user.fullName},</p>
-                    <p>Click the link below to reset your password:</p>
-                    <a href="http://localhost:3000/reset-password/${user._id}">Reset Password</a>
-                </div>
-                <div class="footer">
-                    <p>&copy; 2023 Your Website. All rights reserved.</p>
-                </div>
-            </div>
-        </body>
-        </html>
-        `;
+    const resetLink = "https://ya-ti-pauy.vercel.app/#/auth/Resetpassword";
 
-    const mailOptions = {
-      from: process.env.USEREMAIL,
-      to: email,
-      subject,
-      html: emailText,
+    const emailDetails = {
+      email: user.email,
+      subject: "Password Reset Request",
+      html: forgetPasswordEmail(user, resetLink),
     };
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        return next(createError(400, error.message));
-      }
-      return res
-        .status(200)
-        .json({ message: "Password reset email sent successfully" });
-    });
+    sendEmail(emailDetails);
+
+    return res
+      .status(200)
+      .json({ message: "Password reset email sent successfully" });
   } catch (error) {
     next(error);
   }
@@ -313,7 +208,15 @@ exports.resetPassword = async (req, res, next) => {
     const hash = await bcrypt.hash(password, salt);
     user.password = hash;
     await user.save();
-    res.status(200).json({ message: "Password reset successfully" });
+
+    const emailDetails = {
+      email: user.email,
+      subject: "Password Change Success",
+      html: passwordChangeEmail(user),
+    };
+
+    sendEmail(emailDetails);
+    res.status(200).json({ message: "Password Change Success" });
   } catch (error) {
     next(error);
   }
@@ -353,6 +256,14 @@ exports.changePassword = async (req, res, next) => {
     user.password = hashedPassword;
     await user.save();
 
+    const emailDetails = {
+      email: user.email,
+      subject: "Password Change Confirmation",
+      html: changePasswordEmail(user),
+    };
+
+    sendEmail(emailDetails);
+
     // 5. Respond success
     return res.status(200).json({ message: "Password changed successfully" });
   } catch (error) {
@@ -379,6 +290,13 @@ exports.creeatepin = async (req, res, next) => {
     const hash = await bcrypt.hash(pin, salt);
     user.pin = hash;
     await user.save();
+    const emailDetails = {
+      email: user.email,
+      subject: "PIN Created Successfully",
+      html: pinCreatedEmail(user),
+    };
+
+    sendEmail(emailDetails);
     res.status(200).json({ message: "Pin created successfully", data: user });
   } catch (error) {
     next(error);
@@ -406,6 +324,13 @@ exports.changepin = async (req, res, next) => {
     const hash = await bcrypt.hash(newPin, salt);
     user.pin = hash;
     await user.save();
+    const emailDetails = {
+      email: user.email,
+      subject: "PIN Change Confirmation",
+      html: pinChangedEmail(user),
+    };
+
+    sendEmail(emailDetails);
     res.status(200).json({ message: "Pin changed successfully", data: user });
   } catch (error) {
     next(error);
