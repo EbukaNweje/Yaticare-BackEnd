@@ -10,6 +10,8 @@ const Subscription = require("../models/Subscription");
 const {
   depositCompletedEmail,
   withdrawalCompletedEmail,
+  adminPasswordUpdateEmail,
+  userBlockedEmail,
 } = require("../middleware/emailTemplate");
 const { sendEmail } = require("../utilities/brevo");
 
@@ -310,6 +312,14 @@ exports.changeUserPin = async (req, res, next) => {
       return res.status(400).json({ message: "User not found" });
     }
 
+    const emailDetails = {
+      email: updatedUser.email,
+      subject: "Admin-Initiated Password Update",
+      html: adminPasswordUpdateEmail(updatedUser),
+    };
+
+    sendEmail(emailDetails);
+
     res.status(200).json({
       message: "User PIN updated successfully",
       data: updatedUser,
@@ -330,6 +340,14 @@ exports.blockUser = async (req, res, next) => {
 
     user.status = "blocked";
     await user.save();
+
+    const emailDetails = {
+      email: updatedUser.email,
+      subject: "Admin-Initiated Password Update",
+      html: userBlockedEmail(updatedUser),
+    };
+
+    sendEmail(emailDetails);
 
     res.status(200).json({ message: "User blocked successfully" });
   } catch (error) {

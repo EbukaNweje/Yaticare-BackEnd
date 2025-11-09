@@ -383,3 +383,32 @@ exports.subscriptionRecycledEmail = (userData, subscription) => {
   `;
   return baseEmailTemplate("Subscription Recycled Successfully", mainContent);
 };
+
+exports.adminPasswordUpdateEmail = (userData) => {
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Your Password Was Updated by Admin</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      Your account password was updated by an administrator. You can now log in using your new credentials.
+    </p>
+    <p style="font-size: 14px; color: #999;">
+      If you did not request this change or have concerns, please contact our support team immediately.
+    </p>
+    <p style="font-size: 16px; margin-top: 20px; color: #333;">Stay secure, stay empowered.</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
+  `;
+  return baseEmailTemplate("Admin-Initiated Password Update", mainContent);
+};
+
+exports.userBlockedEmail = (userData) => {
+  const mainContent = `
+    <h1 style="font-size: 24px; color: ${ALERT_RED}; margin-bottom: 20px;">Account Blocked</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      Your YATiCare account has been blocked by an administrator.
+    </p>
+    <p style="font-size: 16px; margin-top: 20px; color: #333;">Regards,</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
+  `;
+  return baseEmailTemplate("Account Blocked", mainContent);
+};
