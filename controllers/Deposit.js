@@ -91,37 +91,39 @@ exports.userDeposit = async (req, res, next) => {
     // ... (your deposit saving logic here)
 
     // After deposit, check if user has a referrer
-    if (user.referralCode) {
-      const referrer = await user.findOne({
-        "inviteCode.code": user.referralCode,
-      });
+    // if (user.referralCode) {
+    //   const referrer = await user.findOne({
+    //     "inviteCode.code": user.referralCode,
+    //   });
 
-      if (referrer) {
-        const commission = (1.5 / 100) * roundedNumber; // 1.5% of deposit
-        referrer.accountBalance += commission;
+    //   if (referrer) {
+    //     const commission = (1.5 / 100) * roundedNumber; // 1.5% of deposit
+    //     referrer.accountBalance += commission;
 
-        await referrer.save();
+    //     await referrer.save();
+    //     const emailDetails = {
+    //       email: user.email,
+    //       subject: "Deposit Request Initiated",
+    //       html: depositRequestEmail(user),
+    //     };
+    //     sendEmail(emailDetails);
 
-        if (deposit) {
-          const emailDetails = {
-            email: user.email,
-            subject: "Deposit Request Initiated",
-            html: depositRequestEmail(user),
-          };
-          sendEmail(emailDetails);
-        }
-
-        if (deposit.status === "pending") {
-          return res.status(200).json({
-            message: `Deposit made and pending`,
-          });
-        }
-        if (deposit.status === "confirmed") {
-          User.accountBalance += roundedNumber;
-        }
-      }
-    }
-
+    //     if (deposit.status === "pending") {
+    //       return res.status(200).json({
+    //         message: `Deposit made and pending`,
+    //       });
+    //     }
+    //     if (deposit.status === "confirmed") {
+    //       User.accountBalance += roundedNumber;
+    //     }
+    //   }
+    // }
+    const emailDetails = {
+      email: user.email,
+      subject: "Deposit Request Initiated",
+      html: depositRequestEmail(user),
+    };
+    sendEmail(emailDetails);
     res.status(200).json({ message: "Deposit successful!" });
   } catch (error) {
     next(error);

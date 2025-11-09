@@ -243,7 +243,7 @@ exports.pinChangedEmail = (userData) => {
 
 exports.depositRequestEmail = (userData) => {
   const mainContent = `
-    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">PIN Changed Successfully</h1>
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Deposit Request Initiated</h1>
     <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
          We’ve received your deposit request. Funds will reflect after processing (0-2 hours).  
@@ -256,7 +256,7 @@ exports.depositRequestEmail = (userData) => {
 
 exports.depositCompletedEmail = (userData, amount) => {
   const mainContent = `
-    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">PIN Changed Successfully</h1>
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Deposit Completed</h1>
     <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
          Your deposit of ${amount} is now in your YATiCare Back Office. Start growing and earning with the community!    
@@ -269,7 +269,7 @@ exports.depositCompletedEmail = (userData, amount) => {
 
 exports.withdrawalRequestEmail = (userData) => {
   const mainContent = `
-    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">PIN Changed Successfully</h1>
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Withdrawal Request Initiated</h1>
     <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
          Your withdrawal request is being processed. Allow up to 48 hours for completion.    
@@ -282,7 +282,7 @@ exports.withdrawalRequestEmail = (userData) => {
 
 exports.withdrawalCompletedEmail = (userData, amount) => {
   const mainContent = `
-    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">PIN Changed Successfully</h1>
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Withdrawal Completed</h1>
     <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
          ${amount} has been sent to your linked account. Thank you for choosing YATiCare!    
@@ -295,7 +295,7 @@ exports.withdrawalCompletedEmail = (userData, amount) => {
 
 exports.contributionCycleStartsEmail = (userData, subscription) => {
   const mainContent = `
-    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">PIN Changed Successfully</h1>
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Your Contribution Cycle Starts Soon</h1>
     <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
          Wow! We are excited about your earnings so far, and we believe you are too.    
@@ -314,7 +314,7 @@ exports.contributionCycleStartsEmail = (userData, subscription) => {
 
 exports.referralCommissionEmail = (userData, commissionAmount) => {
   const mainContent = `
-    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">You Earned a Referral Commission!</h1>
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Referral Commission Earned</h1>
     <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${
       userData.userName
     },</p>
@@ -411,4 +411,17 @@ exports.userBlockedEmail = (userData) => {
     <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
   `;
   return baseEmailTemplate("Account Blocked", mainContent);
+};
+
+exports.userUnblockedEmail = (userData) => {
+  const mainContent = `
+    <h1 style="font-size: 24px; color: ${SUCCESS_GREEN}; margin-bottom: 20px;">Account Unblocked</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      Your YATiCare account has been unblocked by an administrator. You now have full access to your account and services.
+    </p>
+    <p style="font-size: 16px; margin-top: 20px; color: #333;">Welcome back!</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
+  `;
+  return baseEmailTemplate("Account Unblocked", mainContent);
 };

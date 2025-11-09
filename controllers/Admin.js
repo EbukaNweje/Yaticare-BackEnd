@@ -343,7 +343,7 @@ exports.blockUser = async (req, res, next) => {
 
     const emailDetails = {
       email: updatedUser.email,
-      subject: "Admin-Initiated Password Update",
+      subject: "Account Blocked",
       html: userBlockedEmail(updatedUser),
     };
 
