@@ -295,7 +295,6 @@ exports.creeatepin = async (req, res, next) => {
       subject: "PIN Created Successfully",
       html: pinCreatedEmail(user),
     };
-
     sendEmail(emailDetails);
     res.status(200).json({ message: "Pin created successfully", data: user });
   } catch (error) {

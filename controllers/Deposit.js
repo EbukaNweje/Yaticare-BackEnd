@@ -5,6 +5,8 @@ const User = require("../models/User");
 const transporter = require("../utilities/email");
 const createError = require("../utilities/error");
 const { DateTime } = require("luxon");
+const { sendEmail } = require("../utilities/brevo");
+const { depositRequestEmail } = require("../middleware/emailTemplate");
 
 exports.userDeposit = async (req, res, next) => {
   try {
@@ -101,57 +103,13 @@ exports.userDeposit = async (req, res, next) => {
         await referrer.save();
 
         if (deposit) {
-          const mailOptions = {
-            from: process.env.USEREMAIL,
-            to: referrer.email,
+          const emailDetails = {
+            email: user.email,
             subject: "Deposit Request Initiated",
-            html: `
-                        <h2>Hello ${referrer.userName}!</h2>
-                        <p> you just deposited ${roundedNumber} to your balance in ${PaymentType}</p>
-                        <p>Regards, <br>YATiCare  Team.</p>
-                    `,
+            html: depositRequestEmail(user),
           };
-
-          transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-              console.error("Email sending failed: ", error.message);
-            } else {
-              console.log("Referral email sent successfully");
-            }
-          });
+          sendEmail(emailDetails);
         }
-
-        // Send Email to referrer
-        const mailOptions = {
-          from: process.env.USEREMAIL,
-          to: referrer.email,
-          subject: "Deposit Request Initiated",
-          html: `
-                        <h2>Hello ${referrer.userName}!</h2>
-                        <p>We’ve received your deposit request. Funds will reflect after processing (0-2 hours).</p>
-                        <p>Regards, <br>YATiCare  Team.</p>
-                    `,
-        };
-        const mailOptions2 = {
-          from: process.env.USEREMAIL,
-          to: referrer.email,
-          subject: "You Earned a Referral Commission!",
-          html: `
-                        <h2>Congratulations ${referrer.userName}!</h2>
-                        <p>You just earned <b>${commission.toFixed(
-                          2
-                        )}</b> because your referral made a deposit!</p>
-                        <p>Keep sharing your referral link to earn more!</p>
-                    `,
-        };
-
-        transporter.sendMail(mailOptions, mailOptions2, (error, info) => {
-          if (error) {
-            console.error("Email sending failed: ", error.message);
-          } else {
-            console.log("Referral email sent successfully");
-          }
-        });
 
         if (deposit.status === "pending") {
           return res.status(200).json({

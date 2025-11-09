@@ -240,3 +240,146 @@ exports.pinChangedEmail = (userData) => {
   `;
   return baseEmailTemplate("PIN Change Confirmation", mainContent);
 };
+
+exports.depositRequestEmail = (userData) => {
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">PIN Changed Successfully</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+         We’ve received your deposit request. Funds will reflect after processing (0-2 hours).  
+    </p>
+    <p style="font-size: 16px; margin-top: 20px; color: #333;">Regards,</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
+  `;
+  return baseEmailTemplate("Deposit Request Initiated", mainContent);
+};
+
+exports.depositRequestEmail = (userData, amount) => {
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">PIN Changed Successfully</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+         Your deposit of ${amount} is now in your YATiCare Back Office. Start growing and earning with the community!    
+    </p>
+    <p style="font-size: 16px; margin-top: 20px; color: #333;">Regards,</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
+  `;
+  return baseEmailTemplate("Deposit Completed", mainContent);
+};
+
+exports.withdrawalRequestEmail = (userData) => {
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">PIN Changed Successfully</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+         Your withdrawal request is being processed. Allow up to 48 hours for completion.    
+    </p>
+    <p style="font-size: 16px; margin-top: 20px; color: #333;">Regards,</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
+  `;
+  return baseEmailTemplate("Withdrawal Request Initiated", mainContent);
+};
+
+exports.withdrawalCompletedEmail = (userData, amount) => {
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">PIN Changed Successfully</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+         ${amount} has been sent to your linked account. Thank you for choosing YATiCare!    
+    </p>
+    <p style="font-size: 16px; margin-top: 20px; color: #333;">Regards,</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
+  `;
+  return baseEmailTemplate("Withdrawal Completed", mainContent);
+};
+
+exports.contributionCycleStartsEmail = (userData, subscription) => {
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">PIN Changed Successfully</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+         Wow! We are excited about your earnings so far, and we believe you are too.    
+    </p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+         Your next contribution of ${subscription.amount} begins in 24 hours You may wish to upgrade too.
+    </p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+         Ensure funds are in your wallet for seamless processing, trading and more daily profits.
+    </p>
+    <p style="font-size: 16px; margin-top: 20px; color: #333;">Regards,</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
+  `;
+  return baseEmailTemplate("Your Contribution Cycle Starts Soon", mainContent);
+};
+
+exports.referralCommissionEmail = (userData, commissionAmount) => {
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">You Earned a Referral Commission!</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${
+      userData.userName
+    },</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      Great news! You've just earned a referral commission of <strong>$${commissionAmount.toFixed(
+        2
+      )}</strong> for inviting a new member to YATiCare.
+    </p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      Thank you for helping grow our community. Your bonus has been added to your account balance.
+    </p>
+    <p style="font-size: 16px; margin-top: 20px; color: #333;">Keep sharing and keep earning!</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
+  `;
+  return baseEmailTemplate("Referral Commission Earned", mainContent);
+};
+
+exports.subscriptionCreatedEmail = (userData, subscription) => {
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Subscription Created Successfully</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${
+      userData.userName
+    },</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      Your subscription of <strong>$${subscription.amount.toFixed(
+        2
+      )}</strong> has been successfully activated on <strong>${new Date(
+    subscription.startDate
+  ).toLocaleDateString()}</strong>.
+    </p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      You’ll begin earning daily interest and can track your progress in your dashboard.
+    </p>
+    <p style="font-size: 14px; color: #999;">
+      If you have any questions or didn’t authorize this subscription, please contact our support team immediately.
+    </p>
+    <p style="font-size: 16px; margin-top: 20px; color: #333;">Welcome aboard!</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
+  `;
+  return baseEmailTemplate("Subscription Created Successfully", mainContent);
+};
+
+exports.subscriptionRecycledEmail = (userData, subscription) => {
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Subscription Recycled Successfully</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${
+      userData.userName
+    },</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      Your subscription of <strong>$${subscription.amount.toFixed(
+        2
+      )}</strong> has been successfully recycled. Your new cycle begins on <strong>${new Date(
+    subscription.startDate
+  ).toLocaleDateString()}</strong> and ends on <strong>${new Date(
+    subscription.endDate
+  ).toLocaleDateString()}</strong>.
+    </p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      You’ll continue earning daily interest and enjoying all your benefits without interruption.
+    </p>
+    <p style="font-size: 14px; color: #999;">
+      If you didn’t authorize this action, please contact our support team immediately.
+    </p>
+    <p style="font-size: 16px; margin-top: 20px; color: #333;">Thank you for staying with us!</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
+  `;
+  return baseEmailTemplate("Subscription Recycled Successfully", mainContent);
+};

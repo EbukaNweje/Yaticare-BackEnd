@@ -4,6 +4,12 @@ const cron = require("node-cron");
 const Bonus = require("../models/Bonus");
 const DailyInterest = require("../models/DailyInterest");
 const mongoose = require("mongoose");
+const {
+  subscriptionCreatedEmail,
+  referralCommissionEmail,
+  contributionCycleStartsEmail,
+  subscriptionRecycledEmail,
+} = require("../middleware/emailTemplate");
 
 exports.createSubscription = async (req, res) => {
   try {
@@ -76,6 +82,12 @@ exports.createSubscription = async (req, res) => {
       referrer.userTransactionTotal.bonusHistoryTotal += bonusAmount;
       referrer.userTransaction.bonusHistory.push(bonus._id);
       await referrer.save();
+      const emailDetails = {
+        email: user.email,
+        subject: "Referral Commission Earned",
+        html: referralCommissionEmail(user, bonusAmount),
+      };
+      sendEmail(emailDetails);
     }
 
     // Save the subscription and user
@@ -84,6 +96,13 @@ exports.createSubscription = async (req, res) => {
     user.userSubscription.push(newSubscription._id);
     user.userTransaction.subscriptionsHistory.push(newSubscription._id);
     await user.save();
+
+    const emailDetails = {
+      email: user.email,
+      subject: "Subscription Created Successfully",
+      html: subscriptionCreatedEmail(user, newSubscription),
+    };
+    sendEmail(emailDetails);
 
     res.status(201).json({
       message: "Subscription created successfully",
@@ -120,11 +139,12 @@ cron.schedule("0 0 * * *", async () => {
 
       // ✅ Send reminder email one day before expiration
       if (isLastDay && !subscription.isSubscriptionRecycle) {
-        await sendEmail({
-          to: user.email,
-          subject: "Your subscription is about to expire",
-          text: `Hi ${user.userName}, your subscription will expire tomorrow. Please recycle to continue enjoying your benefits.`,
-        });
+        const emailDetails = {
+          email: user.email,
+          subject: "Subscription Created Successfully",
+          html: contributionCycleStartsEmail(user, subscription),
+        };
+        sendEmail(emailDetails);
 
         subscription.isSubscriptionRecycle = true;
         await subscription.save();
@@ -227,7 +247,23 @@ exports.recycleSubscription = async (req, res) => {
       referrer.userTransaction.bonusHistory.push(bonus._id);
       referrer.userTransactionTotal.bonusHistoryTotal += commission;
       await referrer.save();
+
+      const emailDetails = {
+        email: user.email,
+        subject: "Referral Commission Earned",
+        html: referralCommissionEmail(user, commission),
+      };
+
+      sendEmail(emailDetails);
     }
+
+    const emailDetails = {
+      email: user.email,
+      subject: "Subscription Recycled Successfully",
+      html: subscriptionRecycledEmail(user, subscription),
+    };
+
+    sendEmail(emailDetails);
 
     res.status(200).json({
       message: "Subscription recycled successfully",
