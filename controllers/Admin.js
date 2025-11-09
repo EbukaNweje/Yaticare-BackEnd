@@ -185,7 +185,7 @@ exports.approveWithdrawal = async (req, res, next) => {
 
     const emailDetails = {
       email: user.email,
-      subject: "Deposit Completed",
+      subject: "Withdrawal Completed",
       html: withdrawalCompletedEmail(user),
     };
 
