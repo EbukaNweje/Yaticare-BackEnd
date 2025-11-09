@@ -78,15 +78,6 @@ const createWithdrawal = async (req, res) => {
       withdrawalDateChecked: new Date(),
     });
 
-    await withdrawals.save();
-    const emailDetails = {
-      email: user.email,
-      subject: "Withdrawal Request Initiated",
-      html: withdrawalRequestEmail(user),
-    };
-
-    sendEmail(emailDetails);
-
     // Push withdrawal into user.userTransaction.withdraw
     user.userTransaction.withdrawal.push(withdrawals._id);
     await user.save();
@@ -100,6 +91,15 @@ const createWithdrawal = async (req, res) => {
     });
 
     await history.save();
+
+    await withdrawals.save();
+    const emailDetails = {
+      email: user.email,
+      subject: "Withdrawal Request Initiated",
+      html: withdrawalRequestEmail(user),
+    };
+
+    sendEmail(emailDetails);
 
     return res.status(201).json({
       message: "Withdrawal request submitted successfully",

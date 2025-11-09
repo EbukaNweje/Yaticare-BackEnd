@@ -425,3 +425,23 @@ exports.userUnblockedEmail = (userData) => {
   `;
   return baseEmailTemplate("Account Unblocked", mainContent);
 };
+
+exports.firstTimeReferralBonusEmail = (userData, bonusAmount) => {
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">🎉 First Time Referral Bonus Earned!</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${
+      userData.userName
+    },</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      Congratulations! You've earned a <strong>$${bonusAmount.toFixed(
+        2
+      )}</strong> bonus for referring a new member to YATiCare.
+    </p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      This is your first successful referral — thank you for helping us grow our community!
+    </p>
+    <p style="font-size: 16px; margin-top: 20px; color: #333;">Keep sharing your invite link and keep earning!</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
+  `;
+  return baseEmailTemplate("First Time Referral Bonus", mainContent);
+};
