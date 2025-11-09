@@ -137,7 +137,6 @@ exports.login = async (req, res, next) => {
       subject: "Recent Login Activity",
       html: loginEmail(user),
     };
-
     sendEmail(emailDetails);
 
     res.status(200).json({

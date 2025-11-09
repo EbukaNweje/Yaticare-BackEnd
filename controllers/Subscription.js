@@ -86,7 +86,7 @@ exports.createSubscription = async (req, res) => {
       const emailDetails = {
         email: referrer.email,
         subject: "Referral Commission Earned",
-        html: referralCommissionEmail(user, bonusAmount),
+        html: referralCommissionEmail(referrer, bonusAmount),
       };
       sendEmail(emailDetails);
     }
