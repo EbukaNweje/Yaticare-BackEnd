@@ -105,7 +105,7 @@ exports.approveDeposit = async (req, res, next) => {
     const emailDetails = {
       email: user.email,
       subject: "Deposit Completed",
-      html: depositCompletedEmail(user),
+      html: depositCompletedEmail(user, deposit),
     };
 
     sendEmail(emailDetails);
