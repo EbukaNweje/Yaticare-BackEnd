@@ -241,10 +241,10 @@ exports.pinChangedEmail = (userData) => {
   return baseEmailTemplate("PIN Change Confirmation", mainContent);
 };
 
-exports.depositRequestEmail = (userData) => {
+exports.depositRequestEmail = (deposit) => {
   const mainContent = `
     <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Deposit Request Initiated</h1>
-    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${deposit.userName},</p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
          We’ve received your deposit request. Funds will reflect after processing (0-2 hours).  
     </p>
