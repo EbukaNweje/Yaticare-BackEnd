@@ -119,9 +119,9 @@ exports.userDeposit = async (req, res, next) => {
     //   }
     // }
     const emailDetails = {
-      email: deposit.email,
+      email: user.email,
       subject: "Deposit Request Initiated",
-      html: depositRequestEmail(deposit),
+      html: depositRequestEmail(user),
     };
     sendEmail(emailDetails);
     res.status(200).json({ message: "Deposit successful!" });
