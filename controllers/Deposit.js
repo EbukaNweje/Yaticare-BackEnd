@@ -123,6 +123,8 @@ exports.userDeposit = async (req, res, next) => {
       subject: "Deposit Request Initiated",
       html: depositRequestEmail(user),
     };
+
+    console.log("first", user.email);
     sendEmail(emailDetails);
     res.status(200).json({ message: "Deposit successful!" });
   } catch (error) {
