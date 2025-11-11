@@ -289,11 +289,13 @@ exports.creeatepin = async (req, res, next) => {
     const hash = await bcrypt.hash(pin, salt);
     user.pin = hash;
     await user.save();
+
     const emailDetails = {
       email: user.email,
       subject: "PIN Created Successfully",
       html: pinCreatedEmail(user),
     };
+
     sendEmail(emailDetails);
     res.status(200).json({ message: "Pin created successfully", data: user });
   } catch (error) {
