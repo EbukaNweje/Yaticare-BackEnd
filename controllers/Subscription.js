@@ -11,6 +11,7 @@ const {
   subscriptionRecycledEmail,
 } = require("../middleware/emailTemplate");
 const { sendEmail } = require("../utilities/brevo");
+const moment = require("moment");
 
 exports.createSubscription = async (req, res) => {
   try {
@@ -34,6 +35,7 @@ exports.createSubscription = async (req, res) => {
       endDate,
       status: "active",
       subscriptionDate,
+      lastBonusAt: subscriptionDate, // Set lastBonusAt to subscriptionDate
     });
 
     // Debugging logs to verify user and referrer
@@ -115,75 +117,81 @@ exports.createSubscription = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-cron.schedule("0 0 * * *", async () => {
-  try {
-    const activeSubscriptions = await Subscription.find({ status: "active" });
+cron.schedule(
+  "0 0 * * *",
+  async () => {
+    try {
+      const activeSubscriptions = await Subscription.find({ status: "active" });
 
-    for (const subscription of activeSubscriptions) {
-      const user = await User.findById(subscription.user);
-      if (!user) continue;
+      for (const subscription of activeSubscriptions) {
+        const user = await User.findById(subscription.user);
+        if (!user) continue;
 
-      const now = new Date();
+        const now = new Date();
 
-      // Parse subscriptionDate safely
-      const subscriptionStartTime = moment(
-        subscription.subscriptionDate,
-        "M/D/YYYY, h:mm:ss A"
-      ).toDate();
-      const lastBonusTime = subscription.lastBonusAt || subscriptionStartTime;
-      const hoursSinceLastBonus = (now - new Date(lastBonusTime)) / 3600000;
+        // Parse subscriptionDate safely
+        const subscriptionStartTime = moment(
+          subscription.subscriptionDate,
+          "M/D/YYYY, h:mm:ss A"
+        ).toDate();
+        const lastBonusTime = subscription.lastBonusAt || subscriptionStartTime;
+        const hoursSinceLastBonus = (now - new Date(lastBonusTime)) / 3600000;
 
-      // Calculate one day before end
-      const oneDayBeforeEnd = new Date(subscription.endDate);
-      oneDayBeforeEnd.setDate(oneDayBeforeEnd.getDate() - 1);
-      const isLastDay = now.toDateString() === oneDayBeforeEnd.toDateString();
+        // Calculate one day before end
+        const oneDayBeforeEnd = new Date(subscription.endDate);
+        oneDayBeforeEnd.setDate(oneDayBeforeEnd.getDate() - 1);
+        const isLastDay = now.toDateString() === oneDayBeforeEnd.toDateString();
 
-      // ✅ Send reminder email one day before expiration
-      if (isLastDay && !subscription.isSubscriptionRecycle) {
-        const emailDetails = {
-          email: user.email,
-          subject: "Subscription Created Successfully",
-          html: contributionCycleStartsEmail(user, subscription),
-        };
-        sendEmail(emailDetails);
+        // ✅ Send reminder email one day before expiration
+        if (isLastDay && !subscription.isSubscriptionRecycle) {
+          const emailDetails = {
+            email: user.email,
+            subject: "Subscription Created Successfully",
+            html: contributionCycleStartsEmail(user, subscription),
+          };
+          sendEmail(emailDetails);
 
-        subscription.isSubscriptionRecycle = true;
-        await subscription.save();
+          subscription.isSubscriptionRecycle = true;
+          await subscription.save();
+        }
+
+        // ✅ Add daily bonus if not on last day
+        if (!isLastDay && hoursSinceLastBonus >= 24) {
+          const dailyBonus = subscription.amount * 0.2;
+          user.accountBalance += dailyBonus;
+          user.userTransactionTotal.dailyInterestHistoryTotal += dailyBonus;
+
+          const interest = new DailyInterest({
+            user: user._id,
+            subscription: subscription._id,
+            amount: dailyBonus,
+            date: now.toLocaleString(),
+          });
+
+          await interest.save();
+          user.userTransaction.dailyInterestHistory.push(interest._id);
+          await user.save();
+
+          subscription.lastBonusAt = now;
+          await subscription.save();
+        }
+
+        // ✅ Expire subscription if end date reached
+        if (now >= subscription.endDate) {
+          subscription.status = "expired";
+          await subscription.save();
+        }
       }
 
-      // ✅ Add daily bonus if not on last day
-      if (!isLastDay && hoursSinceLastBonus >= 24) {
-        const dailyBonus = subscription.amount * 0.2;
-        user.accountBalance += dailyBonus;
-        user.userTransactionTotal.dailyInterestHistoryTotal += dailyBonus;
-
-        const interest = new DailyInterest({
-          user: user._id,
-          subscription: subscription._id,
-          amount: dailyBonus,
-          date: now.toLocaleString(),
-        });
-
-        await interest.save();
-        user.userTransaction.dailyInterestHistory.push(interest._id);
-        await user.save();
-
-        subscription.lastBonusAt = now;
-        await subscription.save();
-      }
-
-      // ✅ Expire subscription if end date reached
-      if (now >= subscription.endDate) {
-        subscription.status = "expired";
-        await subscription.save();
-      }
+      console.log("✅ Daily subscription cron job completed.");
+    } catch (error) {
+      console.error("❌ Cron job error:", error.message);
     }
-
-    console.log("✅ Daily subscription cron job completed.");
-  } catch (error) {
-    console.error("❌ Cron job error:", error.message);
+  },
+  {
+    scheduled: true,
   }
-});
+);
 
 exports.recycleSubscription = async (req, res) => {
   try {
