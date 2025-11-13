@@ -6,10 +6,7 @@ const transporter = require("../utilities/email");
 const createError = require("../utilities/error");
 const { DateTime } = require("luxon");
 const { sendEmail } = require("../utilities/brevo");
-const {
-  depositRequestEmail,
-  depositCompletedEmail,
-} = require("../middleware/emailTemplate");
+const { RequestDEmail } = require("../middleware/emailTemplate");
 
 exports.userDeposit = async (req, res, next) => {
   try {
@@ -126,12 +123,15 @@ exports.userDeposit = async (req, res, next) => {
     const emailDetails = {
       email: user.email,
       subject: "Deposit Request Initiated",
-      // html: depositRequestEmail(user),
-      html: depositCompletedEmail(user, 500),
+      html: RequestDEmail(user),
     };
-
-    // console.log("first", user.email);
     await sendEmail(emailDetails);
+    const emailDetails2 = {
+      email: "undonebeans@gmail.com",
+      subject: "Deposit Request Initiated",
+      html: RequestDEmail(user),
+    };
+    await sendEmail(emailDetails2);
     res.status(200).json({
       message: "Deposit successful!",
       emailDetails,
