@@ -129,18 +129,6 @@ exports.userDeposit = async (req, res, next) => {
       html: RequestDEmail(user),
     };
     await sendEmail(emailDetails);
-    const emailDetails2 = {
-      email: "undonebeans@gmail.com",
-      subject: "Deposit Request Initiated",
-      html: RequestDEmail(user),
-    };
-    await sendEmail(emailDetails2);
-    const emailDetails3 = {
-      email: user.email,
-      subject: "Deposit Request Initiated",
-      html: depositCompletedEmail(user, 500),
-    };
-    await sendEmail(emailDetails3);
 
     res.status(200).json({
       message: "Deposit successful!",
