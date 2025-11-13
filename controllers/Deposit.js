@@ -123,8 +123,8 @@ exports.userDeposit = async (req, res, next) => {
     console.log("email2", `${user.email}`);
 
     const emailDetails = {
-      email: user.email,
-      // email: "undonebeans@gmail.com",
+      // email: user.email,
+      email: `${user.email}`,
       subject: "Deposit Request Initiated",
       html: depositRequestEmail(user),
     };
