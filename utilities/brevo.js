@@ -1,4 +1,5 @@
 const axios = require("axios");
+require("dotenv").config();
 
 exports.sendEmail = async (options) => {
   try {
