@@ -119,16 +119,21 @@ exports.userDeposit = async (req, res, next) => {
     //     }
     //   }
     // }
+    console.log("email", user.email);
+    console.log("email2", `${user.email}`);
+
     const emailDetails = {
       email: user.email,
+      // email: "undonebeans@gmail.com",
       subject: "Deposit Request Initiated",
       html: depositRequestEmail(user),
     };
 
     // console.log("first", user.email);
-    sendEmail(emailDetails);
+    await sendEmail(emailDetails);
     res.status(200).json({
       message: "Deposit successful!",
+      emailDetails,
     });
   } catch (error) {
     next(error);
