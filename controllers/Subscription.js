@@ -35,7 +35,7 @@ exports.createSubscription = async (req, res) => {
       endDate,
       status: "active",
       subscriptionDate,
-      lastBonusAt: subscriptionDate, // Set lastBonusAt to subscriptionDate
+      lastBonusAt: new Date(subscriptionDate), // Set lastBonusAt to subscriptionDate
     });
 
     // Debugging logs to verify user and referrer
