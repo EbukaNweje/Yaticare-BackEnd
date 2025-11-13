@@ -35,9 +35,10 @@ exports.userDeposit = async (req, res, next) => {
 
     if (PaymentType == "BANK") {
       return res.status(404).json({
-        message: `${PaymentType} commig soon!`,
+        message: `${PaymentType} comming soon!`,
       });
     }
+    //console.log("seen");
 
     // Perform the currency conversion
     let response;
@@ -124,9 +125,11 @@ exports.userDeposit = async (req, res, next) => {
       html: depositRequestEmail(user),
     };
 
-    console.log("first", user.email);
+    // console.log("first", user.email);
     sendEmail(emailDetails);
-    res.status(200).json({ message: "Deposit successful!" });
+    res.status(200).json({
+      message: "Deposit successful!",
+    });
   } catch (error) {
     next(error);
   }
