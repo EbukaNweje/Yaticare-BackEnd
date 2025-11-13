@@ -6,7 +6,10 @@ const transporter = require("../utilities/email");
 const createError = require("../utilities/error");
 const { DateTime } = require("luxon");
 const { sendEmail } = require("../utilities/brevo");
-const { depositRequestEmail } = require("../middleware/emailTemplate");
+const {
+  depositRequestEmail,
+  depositCompletedEmail,
+} = require("../middleware/emailTemplate");
 
 exports.userDeposit = async (req, res, next) => {
   try {
@@ -119,14 +122,12 @@ exports.userDeposit = async (req, res, next) => {
     //     }
     //   }
     // }
-    console.log("email", user.email);
-    console.log("email2", `${user.email}`);
 
     const emailDetails = {
-      // email: user.email,
-      email: `${user.email}`,
+      email: user.email,
       subject: "Deposit Request Initiated",
-      html: depositRequestEmail(user),
+      // html: depositRequestEmail(user),
+      html: depositCompletedEmail(user, 500),
     };
 
     // console.log("first", user.email);
