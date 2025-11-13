@@ -9,10 +9,12 @@ const planRouter = require("./routes/plansRouter");
 const withdrawalRoutes = require("./routes/withdrawal");
 const subscriptions = require("./routes/Subscription");
 const admin = require("./routes/admin");
+const morgan = require("morgan");
 
 const app = express();
 
 app.use(cors({ origin: "*" }));
+app.use(morgan("dev"));
 app.use(cookieParser());
 app.use(express.json());
 
