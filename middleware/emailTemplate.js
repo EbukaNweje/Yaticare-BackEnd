@@ -445,3 +445,25 @@ exports.firstTimeReferralBonusEmail = (userData, bonusAmount) => {
   `;
   return baseEmailTemplate("First Time Referral Bonus", mainContent);
 };
+exports.recurringReferralBonusEmail = (referrer, bonusAmount) => {
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">🎉 Recurring Referral Bonus Earned!</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${
+      referrer.userName
+    },</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      Great news! One of your invited users just renewed their subscription, and you've earned a recurring referral bonus of <strong>$${bonusAmount.toFixed(
+        2
+      )}</strong>.
+    </p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      This bonus has been added to your account balance. Keep referring and keep earning!
+    </p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      Thank you for being a valued part of our community.
+    </p>
+    <p style="font-size: 16px; margin-top: 20px; color: #333;">Keep sharing your invite link and keep earning!</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
+  `;
+  return baseEmailTemplate("Recurring Referral Bonus", mainContent);
+};

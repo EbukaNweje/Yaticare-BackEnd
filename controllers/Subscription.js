@@ -9,6 +9,8 @@ const {
   referralCommissionEmail,
   contributionCycleStartsEmail,
   subscriptionRecycledEmail,
+  recurringReferralBonusEmail,
+  firstTimeReferralBonusEmail,
 } = require("../middleware/emailTemplate");
 const { sendEmail } = require("../utilities/brevo");
 const moment = require("moment");
@@ -93,8 +95,12 @@ exports.createSubscription = async (req, res) => {
       await referrer.save();
       const emailDetails = {
         email: referrer.email,
-        subject: "Referral Commission Earned",
-        html: referralCommissionEmail(referrer, bonusAmount),
+        subject: isFirstSubscription
+          ? "First-Time Referral Bonus Earned"
+          : "Recurring Referral Bonus Earned",
+        html: isFirstSubscription
+          ? referralCommissionEmail(referrer, bonusAmount)
+          : recurringReferralBonusEmail(referrer, bonusAmount),
       };
       sendEmail(emailDetails);
     }
