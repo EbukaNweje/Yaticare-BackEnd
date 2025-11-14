@@ -36,6 +36,9 @@ const SubscriptionSchema = new mongoose.Schema(
     subscriptionDate: {
       type: String,
     },
+    showDate: {
+      type: String,
+    },
     lastBonusAt: {
       type: Date,
       default: null,

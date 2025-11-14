@@ -41,6 +41,7 @@ exports.createSubscription = async (req, res) => {
       status: "active",
       subscriptionDate: parsedSubscriptionDate,
       lastBonusAt: parsedSubscriptionDate,
+      showDate: subscriptionDate,
     });
 
     // Debugging logs to verify user and referrer
