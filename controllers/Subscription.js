@@ -28,14 +28,19 @@ exports.createSubscription = async (req, res) => {
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + durationInDays);
 
+    let parsedSubscriptionDate = new Date(subscriptionDate);
+    if (isNaN(parsedSubscriptionDate.getTime())) {
+      parsedSubscriptionDate = new Date(); // fallback to now if invalid
+    }
+
     const newSubscription = new Subscription({
       user: userId,
       plan,
       amount,
       endDate,
       status: "active",
-      subscriptionDate,
-      lastBonusAt: new Date(subscriptionDate), // Set lastBonusAt to subscriptionDate
+      subscriptionDate: parsedSubscriptionDate,
+      lastBonusAt: parsedSubscriptionDate,
     });
 
     // Debugging logs to verify user and referrer
