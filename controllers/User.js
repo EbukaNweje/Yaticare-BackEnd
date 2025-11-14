@@ -1,3 +1,7 @@
+const {
+  phoneNumberUpdatedEmail,
+  walletInfoUpdatedEmail,
+} = require("../middleware/emailTemplate");
 const Subscription = require("../models/Subscription");
 const User = require("../models/User");
 const createError = require("../utilities/error");
@@ -57,6 +61,13 @@ exports.saveBankInfo = async (req, res) => {
       return res.status(400).json({ message: "User not found" });
     }
 
+    const emailDetails = {
+      email: updatedUser.email,
+      subject: "Wallet Information Added Successfully",
+      html: walletInfoUpdatedEmail(updatedUser),
+    };
+    sendEmail(emailDetails);
+
     res.status(200).json({
       message: "Wallet info saved successfully",
       data: updatedUser,
@@ -83,6 +94,13 @@ exports.changePhoneNumber = async (req, res, next) => {
 
     user.phoneNumber = phoneNumber;
     await user.save();
+
+    const emailDetails = {
+      email: user.email,
+      subject: "Phone Number Updated Successfully",
+      html: phoneNumberUpdatedEmail(user),
+    };
+    sendEmail(emailDetails);
 
     res.status(200).json({
       message: "Phone number updated successfully",

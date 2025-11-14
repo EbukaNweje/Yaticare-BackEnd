@@ -93,6 +93,7 @@ const createWithdrawal = async (req, res) => {
     await history.save();
 
     await withdrawals.save();
+
     const emailDetails = {
       email: user.email,
       subject: "Withdrawal Request Initiated",

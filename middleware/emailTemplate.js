@@ -285,7 +285,7 @@ exports.withdrawalCompletedEmail = (userData, withdrawal) => {
     <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Withdrawal Completed</h1>
     <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
-         ${withdrawal.amount} has been sent to your linked account. Thank you for choosing YATiCare!    
+      Your withdrawal of $${withdrawal.amount} has been processed successfully and sent to your linked address. Thank you for choosing YATiCare! 
     </p>
     <p style="font-size: 16px; margin-top: 20px; color: #333;">Regards,</p>
     <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
@@ -466,4 +466,36 @@ exports.recurringReferralBonusEmail = (referrer, bonusAmount) => {
     <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
   `;
   return baseEmailTemplate("Recurring Referral Bonus", mainContent);
+};
+
+exports.phoneNumberUpdatedEmail = (user) => {
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">📱 Phone Number Updated</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${user.userName},</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      Your phone number has been successfully updated in your account settings.
+    </p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      If you did not make this change or believe it was made in error, please contact our support team immediately.
+    </p>
+    <p style="font-size: 16px; margin-top: 20px; color: #333;">Thank you for keeping your account up to date.</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
+  `;
+  return baseEmailTemplate("Phone Number Updated", mainContent);
+};
+
+exports.walletInfoUpdatedEmail = (user) => {
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">💼 Wallet Information Added</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${user.userName},</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      Your wallet information has been successfully Added in your account settings.
+    </p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      If you did not make this change or believe it was made in error, please contact our support team immediately.
+    </p>
+    <p style="font-size: 16px; margin-top: 20px; color: #333;">Thanks for keeping your account secure and up to date.</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
+  `;
+  return baseEmailTemplate("Wallet Info Added", mainContent);
 };
