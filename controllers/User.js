@@ -4,6 +4,7 @@ const {
 } = require("../middleware/emailTemplate");
 const Subscription = require("../models/Subscription");
 const User = require("../models/User");
+const { sendEmail } = require("../utilities/brevo");
 const createError = require("../utilities/error");
 // const paystack = require('paystack')(process.env.PAYSTACK_SECRET_KEY);
 
