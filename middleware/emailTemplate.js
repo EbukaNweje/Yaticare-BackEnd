@@ -246,7 +246,7 @@ exports.RequestDEmail = (user) => {
     <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Deposit Request Initiated</h1>
     <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hello ${user.userName},</p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
-         We. have received your deposit request. Your deposite will reflect after being proccessed successfully.  
+         You have initiated a deposit request. Your deposit will reflect after being processed successfully.
     </p>
     <p style="font-size: 16px; margin-top: 20px; color: #333;">Regards,</p>
     <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
