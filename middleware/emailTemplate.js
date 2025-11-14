@@ -259,7 +259,7 @@ exports.depositCompletedEmail = (userData, deposit) => {
     <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Deposit Completed</h1>
     <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
-         Your deposit of <strong>$${deposit}</strong> is now in your YATiCare Back Office. Start growing and earning with the community!    
+         Your deposit of <strong>$${deposit.amount}</strong> is now in your YATiCare Back Office. Start growing and earning with the community!    
     </p>
     <p style="font-size: 16px; margin-top: 20px; color: #333;">Regards,</p>
     <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
@@ -280,12 +280,12 @@ exports.withdrawalRequestEmail = (userData) => {
   return baseEmailTemplate("Withdrawal Request Initiated", mainContent);
 };
 
-exports.withdrawalCompletedEmail = (userData, amount) => {
+exports.withdrawalCompletedEmail = (userData, withdrawal) => {
   const mainContent = `
     <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Withdrawal Completed</h1>
     <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
-         ${amount} has been sent to your linked account. Thank you for choosing YATiCare!    
+         ${withdrawal.amount} has been sent to your linked account. Thank you for choosing YATiCare!    
     </p>
     <p style="font-size: 16px; margin-top: 20px; color: #333;">Regards,</p>
     <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
