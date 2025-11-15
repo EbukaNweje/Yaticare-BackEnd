@@ -25,7 +25,8 @@ exports.register = async (req, res, next) => {
       return next(createError(400, errors.array()[0].msg));
     }
 
-    const { userName, email, password, phoneNumber, referralCode } = req.body;
+    const { userName, email, password, phoneNumber, referralCode, country } =
+      req.body;
 
     const existingUserName = await User.findOne({ userName });
     if (existingUserName) {
@@ -48,6 +49,7 @@ exports.register = async (req, res, next) => {
       email,
       password: hash,
       phoneNumber,
+      country,
     });
 
     // Generate Invite Code
