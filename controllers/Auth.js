@@ -87,7 +87,7 @@ exports.register = async (req, res, next) => {
     await newUser.save();
 
     // Generate Referral Link
-    const referralLink = `https://ya-ti-pauy.vercel.app/#/auth/Sign-up?referralCode=${newUser.inviteCode.code}`;
+    const referralLink = `https://ya-ti-pauy.vercel.app/auth/Sign-up?referralCode=${newUser.inviteCode.code}`;
 
     const emailDetailsRegister = {
       email: newUser.email,
@@ -131,7 +131,7 @@ exports.login = async (req, res, next) => {
     const token = jwt.sign({ id: user._id }, process.env.JWT);
 
     // Generate Referral Link
-    const referralLink = `https://ya-ti-pauy.vercel.app/#/auth/Sign-up?referralCode=${user.inviteCode.code}`;
+    const referralLink = `https://ya-ti-pauy.vercel.app/auth/Sign-up?referralCode=${user.inviteCode.code}`;
 
     await user.save();
     const emailDetails = {
@@ -179,7 +179,7 @@ exports.forgetPassword = async (req, res, next) => {
       return next(createError(400, "User not found"));
     }
 
-    const resetLink = "https://ya-ti-pauy.vercel.app/#/auth/Resetpassword";
+    const resetLink = "https://ya-ti-pauy.vercel.app/auth/Resetpassword";
 
     const emailDetails = {
       email: user.email,
