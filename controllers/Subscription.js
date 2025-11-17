@@ -129,8 +129,9 @@ exports.createSubscription = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 cron.schedule(
-  "0 0 * * *",
+  "* * * * *",
   async () => {
     try {
       const activeSubscriptions = await Subscription.find({ status: "active" });
@@ -158,7 +159,7 @@ cron.schedule(
         if (isLastDay && !subscription.isSubscriptionRecycle) {
           const emailDetails = {
             email: user.email,
-            subject: "Subscription Created Successfully",
+            subject: "Contribution Cycle Starting Soon",
             html: contributionCycleStartsEmail(user, subscription),
           };
           sendEmail(emailDetails);
