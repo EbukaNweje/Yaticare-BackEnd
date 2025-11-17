@@ -131,29 +131,32 @@ exports.createSubscription = async (req, res) => {
 };
 
 cron.schedule(
-  "* * * * *",
+  "*/5 * * * *", // every 5 minutes
   async () => {
     try {
       const activeSubscriptions = await Subscription.find({ status: "active" });
-
       for (const subscription of activeSubscriptions) {
         const user = await User.findById(subscription.user);
         if (!user) continue;
 
         const now = new Date();
 
-        // Parse subscriptionDate safely
+        // Parse subscription start time
         const subscriptionStartTime = moment(
           subscription.subscriptionDate,
           "M/D/YYYY, h:mm:ss A"
         ).toDate();
-        const lastBonusTime = subscription.lastBonusAt || subscriptionStartTime;
-        const hoursSinceLastBonus = (now - new Date(lastBonusTime)) / 3600000;
 
-        // Calculate one day before end
-        const oneDayBeforeEnd = new Date(subscription.endDate);
-        oneDayBeforeEnd.setDate(oneDayBeforeEnd.getDate() - 1);
-        const isLastDay = now.toDateString() === oneDayBeforeEnd.toDateString();
+        const lastBonusTime = subscription.lastBonusAt || subscriptionStartTime;
+
+        // Calculate next eligible bonus time (exactly 24 hours after lastBonusAt)
+        const nextBonusTime = new Date(lastBonusTime);
+        nextBonusTime.setDate(nextBonusTime.getDate() + 1);
+
+        // Calculate if today is the last day (less than 24 hours left)
+        const endDate = new Date(subscription.endDate);
+        const timeUntilEnd = endDate - now;
+        const isLastDay = timeUntilEnd <= 24 * 60 * 60 * 1000;
 
         // ✅ Send reminder email one day before expiration
         if (isLastDay && !subscription.isSubscriptionRecycle) {
@@ -162,14 +165,14 @@ cron.schedule(
             subject: "Contribution Cycle Starting Soon",
             html: contributionCycleStartsEmail(user, subscription),
           };
-          sendEmail(emailDetails);
+          await sendEmail(emailDetails);
 
           subscription.isSubscriptionRecycle = true;
           await subscription.save();
         }
 
-        // ✅ Add daily bonus if not on last day
-        if (!isLastDay && hoursSinceLastBonus >= 24) {
+        // ✅ Add daily bonus exactly 24 hours after lastBonusAt, but not on last day
+        if (!isLastDay && now >= nextBonusTime) {
           const dailyBonus = subscription.amount * 0.2;
           user.accountBalance += dailyBonus;
           user.userTransactionTotal.dailyInterestHistoryTotal += dailyBonus;
@@ -196,7 +199,7 @@ cron.schedule(
         }
       }
 
-      console.log("✅ Daily subscription cron job completed.");
+      // console.log("✅ Daily subscription cron job completed.");
     } catch (error) {
       console.error("❌ Cron job error:", error.message);
     }
@@ -229,13 +232,41 @@ exports.recycleSubscription = async (req, res) => {
       });
     }
 
-    // Calculate original duration
+    // ✅ Add last pending bonus if due
+    const lastBonusTime =
+      subscription.lastBonusAt || subscription.subscriptionDate;
+    const nextBonusTime = new Date(lastBonusTime);
+    nextBonusTime.setDate(new Date(lastBonusTime).getDate() + 1);
+
+    if (currentDate >= nextBonusTime) {
+      const user = await User.findById(subscription.user);
+      const dailyBonus = subscription.amount * 0.2;
+
+      user.accountBalance += dailyBonus;
+      user.userTransactionTotal.dailyInterestHistoryTotal += dailyBonus;
+
+      const interest = new DailyInterest({
+        user: user._id,
+        subscription: subscription._id,
+        amount: dailyBonus,
+        date: currentDate.toLocaleString(),
+      });
+
+      await interest.save();
+      user.userTransaction.dailyInterestHistory.push(interest._id);
+      await user.save();
+
+      subscription.lastBonusAt = currentDate;
+      await subscription.save();
+    }
+
+    // ✅ Calculate original duration
     const durationInDays = Math.ceil(
       (new Date(subscription.endDate) - new Date(subscription.startDate)) /
         (1000 * 60 * 60 * 24)
     );
 
-    // Reset subscription period
+    // ✅ Reset subscription period
     const newStartDate = new Date();
     const newEndDate = new Date();
     newEndDate.setDate(newStartDate.getDate() + durationInDays);
@@ -244,7 +275,7 @@ exports.recycleSubscription = async (req, res) => {
     subscription.endDate = newEndDate;
     subscription.status = "active";
     subscription.isSubscriptionRecycle = true;
-    subscription.lastBonusAt = null; // Reset bonus tracking
+    subscription.lastBonusAt = null;
 
     await subscription.save();
 
