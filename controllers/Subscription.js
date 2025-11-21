@@ -112,6 +112,95 @@ exports.createSubscription = async (req, res) => {
     user.userTransaction.subscriptionsHistory.push(newSubscription._id);
     await user.save();
 
+    const dateObj = new Date(subscriptionDate);
+    const hours = dateObj.getHours(); // 6
+    const minutes = dateObj.getMinutes();
+    // console.log("my datwe", dateObj, hours, minutes);
+
+    // ✅ Schedule cron job to run every 5 minutes
+
+    cron.schedule(
+      `${minutes} ${hours} * * *`, // every day at the subscription time
+      async () => {
+        try {
+          const activeSubscriptions = await Subscription.find({
+            status: "active",
+          });
+          for (const subscription of activeSubscriptions) {
+            const user = await User.findById(subscription.user);
+            if (!user) continue;
+
+            const now = new Date();
+
+            // Parse subscription start time
+            const subscriptionStartTime = moment(
+              subscription.subscriptionDate,
+              "M/D/YYYY, h:mm:ss A"
+            ).toDate();
+
+            const lastBonusTime =
+              subscription.lastBonusAt || subscriptionStartTime;
+
+            // Calculate next eligible bonus time (exactly 24 hours after lastBonusAt)
+            const nextBonusTime = new Date(lastBonusTime);
+            nextBonusTime.setDate(nextBonusTime.getDate() + 1);
+
+            // Calculate if today is the last day (less than 24 hours left)
+            const endDate = new Date(subscription.endDate);
+            const timeUntilEnd = endDate - now;
+            const isLastDay = timeUntilEnd <= 24 * 60 * 60 * 1000;
+
+            // ✅ Send reminder email one day before expiration
+            if (isLastDay && !subscription.isSubscriptionRecycle) {
+              const emailDetails = {
+                email: user.email,
+                subject: "Contribution Cycle Starting Soon",
+                html: contributionCycleStartsEmail(user, subscription),
+              };
+              await sendEmail(emailDetails);
+
+              subscription.isSubscriptionRecycle = true;
+              await subscription.save();
+            }
+
+            // ✅ Add daily bonus exactly 24 hours after lastBonusAt, but not on last day
+            if (!isLastDay && now >= nextBonusTime) {
+              const dailyBonus = subscription.amount * 0.2;
+              user.accountBalance += dailyBonus;
+              user.userTransactionTotal.dailyInterestHistoryTotal += dailyBonus;
+
+              const interest = new DailyInterest({
+                user: user._id,
+                subscription: subscription._id,
+                amount: dailyBonus,
+                date: now.toLocaleString(),
+              });
+
+              await interest.save();
+              user.userTransaction.dailyInterestHistory.push(interest._id);
+              await user.save();
+
+              subscription.lastBonusAt = now;
+              await subscription.save();
+            }
+
+            // ✅ Expire subscription if end date reached
+            if (now >= subscription.endDate) {
+              subscription.status = "expired";
+              await subscription.save();
+            }
+          }
+
+          // console.log("✅ Daily subscription cron job completed.");
+        } catch (error) {
+          console.error("❌ Cron job error:", error.message);
+        }
+      },
+      {
+        scheduled: true,
+      }
+    );
+
     const emailDetails = {
       email: user.email,
       subject: "Subscription Created Successfully",
@@ -129,85 +218,6 @@ exports.createSubscription = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
-cron.schedule(
-  "*/5 * * * *", // every 5 minutes
-  async () => {
-    try {
-      const activeSubscriptions = await Subscription.find({ status: "active" });
-      for (const subscription of activeSubscriptions) {
-        const user = await User.findById(subscription.user);
-        if (!user) continue;
-
-        const now = new Date();
-
-        // Parse subscription start time
-        const subscriptionStartTime = moment(
-          subscription.subscriptionDate,
-          "M/D/YYYY, h:mm:ss A"
-        ).toDate();
-
-        const lastBonusTime = subscription.lastBonusAt || subscriptionStartTime;
-
-        // Calculate next eligible bonus time (exactly 24 hours after lastBonusAt)
-        const nextBonusTime = new Date(lastBonusTime);
-        nextBonusTime.setDate(nextBonusTime.getDate() + 1);
-
-        // Calculate if today is the last day (less than 24 hours left)
-        const endDate = new Date(subscription.endDate);
-        const timeUntilEnd = endDate - now;
-        const isLastDay = timeUntilEnd <= 24 * 60 * 60 * 1000;
-
-        // ✅ Send reminder email one day before expiration
-        if (isLastDay && !subscription.isSubscriptionRecycle) {
-          const emailDetails = {
-            email: user.email,
-            subject: "Contribution Cycle Starting Soon",
-            html: contributionCycleStartsEmail(user, subscription),
-          };
-          await sendEmail(emailDetails);
-
-          subscription.isSubscriptionRecycle = true;
-          await subscription.save();
-        }
-
-        // ✅ Add daily bonus exactly 24 hours after lastBonusAt, but not on last day
-        if (!isLastDay && now >= nextBonusTime) {
-          const dailyBonus = subscription.amount * 0.2;
-          user.accountBalance += dailyBonus;
-          user.userTransactionTotal.dailyInterestHistoryTotal += dailyBonus;
-
-          const interest = new DailyInterest({
-            user: user._id,
-            subscription: subscription._id,
-            amount: dailyBonus,
-            date: now.toLocaleString(),
-          });
-
-          await interest.save();
-          user.userTransaction.dailyInterestHistory.push(interest._id);
-          await user.save();
-
-          subscription.lastBonusAt = now;
-          await subscription.save();
-        }
-
-        // ✅ Expire subscription if end date reached
-        if (now >= subscription.endDate) {
-          subscription.status = "expired";
-          await subscription.save();
-        }
-      }
-
-      // console.log("✅ Daily subscription cron job completed.");
-    } catch (error) {
-      console.error("❌ Cron job error:", error.message);
-    }
-  },
-  {
-    scheduled: true,
-  }
-);
 
 exports.recycleSubscription = async (req, res) => {
   try {
