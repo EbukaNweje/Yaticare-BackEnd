@@ -15,26 +15,235 @@ const {
 const { sendEmail } = require("../utilities/brevo");
 const moment = require("moment");
 
+// exports.createSubscription = async (req, res) => {
+//   try {
+//     const { userId, plan, amount, durationInDays, subscriptionDate } = req.body;
+
+//     const user = await User.findById(userId);
+//     if (!user) return res.status(404).json({ message: "User not found" });
+
+//     if (user.accountBalance < amount)
+//       return res.status(400).json({ message: "Insufficient balance" });
+
+//     user.accountBalance -= amount;
+
+//     const endDate = new Date();
+//     endDate.setDate(endDate.getDate() + durationInDays);
+
+//     let parsedSubscriptionDate = new Date(subscriptionDate);
+//     if (isNaN(parsedSubscriptionDate.getTime())) {
+//       parsedSubscriptionDate = new Date(); // fallback to now if invalid
+//     }
+
+//     const newSubscription = new Subscription({
+//       user: userId,
+//       plan,
+//       amount,
+//       endDate,
+//       status: "active",
+//       subscriptionDate: parsedSubscriptionDate,
+//       lastBonusAt: parsedSubscriptionDate,
+//       showDate: subscriptionDate,
+//     });
+
+//     // Debugging logs to verify user and referrer
+//     // console.log("Creating subscription for user:", user);
+
+//     // Check if the user creating the subscription has any existing subscriptions
+//     const userSubscriptions = await Subscription.find({ user: userId });
+//     const isFirstSubscription = userSubscriptions.length === 0;
+
+//     if (!isFirstSubscription) {
+//       const lastSub = await Subscription.findOne({ user: userId }).sort({
+//         subscriptionDate: -1,
+//       });
+
+//       if (lastSub && amount < lastSub.amount) {
+//         return res.status(400).json({
+//           message: `You cannot subscribe with an amount less than your last subscription of $${lastSub.amount}`,
+//         });
+//       }
+//     }
+//     // 🎁 Referral Bonus Logic
+//     const referrer = await User.findOne({
+//       "inviteCode.userInvited": user._id,
+//     });
+//     // console.log("Referrer:", referrer);
+
+//     if (referrer) {
+//       // Set bonus rate based on the user's subscription history
+//       const bonusRate = isFirstSubscription ? 0.15 : 0.005;
+//       const bonusAmount = amount * bonusRate;
+
+//       referrer.accountBalance += bonusAmount;
+//       referrer.inviteCode.bonusAmount =
+//         (referrer.inviteCode.bonusAmount || 0) + bonusAmount;
+//       // const date = new Date().toLocaleString();
+
+//       const bonus = new Bonus({
+//         user: referrer._id,
+//         amount: bonusAmount,
+//         reason: isFirstSubscription
+//           ? "First Time Referral Bonus"
+//           : "Recurring Referral Bonus",
+//         date: subscriptionDate,
+//       });
+
+//       await bonus.save();
+//       referrer.userTransactionTotal.bonusHistoryTotal += bonusAmount;
+//       referrer.userTransaction.bonusHistory.push(bonus._id);
+//       await referrer.save();
+//       const emailDetails = {
+//         email: referrer.email,
+//         subject: isFirstSubscription
+//           ? "First-Time Referral Bonus Earned"
+//           : "Recurring Referral Bonus Earned",
+//         html: isFirstSubscription
+//           ? referralCommissionEmail(referrer, bonusAmount)
+//           : recurringReferralBonusEmail(referrer, bonusAmount),
+//       };
+//       sendEmail(emailDetails);
+//     }
+
+//     // Save the subscription and user
+//     await newSubscription.save();
+//     user.isSubscribed = true;
+//     user.userSubscription.push(newSubscription._id);
+//     user.userTransaction.subscriptionsHistory.push(newSubscription._id);
+//     await user.save();
+
+//     const dateObj = new Date(subscriptionDate);
+//     const hours = dateObj.getHours(); // 6
+//     const minutes = dateObj.getMinutes();
+//     // console.log("my datwe", dateObj, hours, minutes);
+
+//     // ✅ Schedule cron job to run every 5 minutes
+
+//     cron.schedule(
+//       `${minutes} ${hours} * * *`, // every day at the subscription time
+//       async () => {
+//         try {
+//           const activeSubscriptions = await Subscription.find({
+//             status: "active",
+//           });
+//           for (const subscription of activeSubscriptions) {
+//             const user = await User.findById(subscription.user);
+//             if (!user) continue;
+
+//             const now = new Date();
+
+//             // Parse subscription start time
+//             const subscriptionStartTime = moment(
+//               subscription.subscriptionDate,
+//               "M/D/YYYY, h:mm:ss A"
+//             ).toDate();
+
+//             const lastBonusTime =
+//               subscription.lastBonusAt || subscriptionStartTime;
+
+//             // Calculate next eligible bonus time (exactly 24 hours after lastBonusAt)
+//             const nextBonusTime = new Date(lastBonusTime);
+//             nextBonusTime.setDate(nextBonusTime.getDate() + 1);
+
+//             // Calculate if today is the last day (less than 24 hours left)
+//             const endDate = new Date(subscription.endDate);
+//             const timeUntilEnd = endDate - now;
+//             const isLastDay = timeUntilEnd <= 24 * 60 * 60 * 1000;
+
+//             // ✅ Send reminder email one day before expiration
+//             if (isLastDay && !subscription.isSubscriptionRecycle) {
+//               const emailDetails = {
+//                 email: user.email,
+//                 subject: "Contribution Cycle Starting Soon",
+//                 html: contributionCycleStartsEmail(user, subscription),
+//               };
+//               await sendEmail(emailDetails);
+
+//               subscription.isSubscriptionRecycle = true;
+//               await subscription.save();
+//             }
+
+//             // ✅ Add daily bonus exactly 24 hours after lastBonusAt, but not on last day
+//             if (!isLastDay && now >= nextBonusTime) {
+//               const dailyBonus = subscription.amount * 0.2;
+//               user.accountBalance += dailyBonus;
+//               user.userTransactionTotal.dailyInterestHistoryTotal += dailyBonus;
+
+//               const interest = new DailyInterest({
+//                 user: user._id,
+//                 subscription: subscription._id,
+//                 amount: dailyBonus,
+//                 date: now.toLocaleString(),
+//               });
+
+//               await interest.save();
+//               user.userTransaction.dailyInterestHistory.push(interest._id);
+//               await user.save();
+
+//               subscription.lastBonusAt = now;
+//               await subscription.save();
+//             }
+
+//             // ✅ Expire subscription if end date reached
+//             if (now >= subscription.endDate) {
+//               subscription.status = "expired";
+//               await subscription.save();
+//             }
+//           }
+
+//           // console.log("✅ Daily subscription cron job completed.");
+//         } catch (error) {
+//           console.error("❌ Cron job error:", error.message);
+//         }
+//       },
+//       {
+//         scheduled: true,
+//       }
+//     );
+
+//     const emailDetails = {
+//       email: user.email,
+//       subject: "Subscription Created Successfully",
+//       html: subscriptionCreatedEmail(user, newSubscription),
+//     };
+//     sendEmail(emailDetails);
+
+//     res.status(201).json({
+//       message: "Subscription created successfully",
+//       subscription: newSubscription,
+//       newBalance: user.accountBalance,
+//     });
+//   } catch (error) {
+//     console.error("Error creating subscription:", error);
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
 exports.createSubscription = async (req, res) => {
   try {
     const { userId, plan, amount, durationInDays, subscriptionDate } = req.body;
 
+    // ✅ Validate user
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
-
-    if (user.accountBalance < amount)
+    if (user.accountBalance < amount) {
       return res.status(400).json({ message: "Insufficient balance" });
+    }
 
+    // ✅ Deduct subscription amount
     user.accountBalance -= amount;
 
+    // ✅ Calculate end date
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + durationInDays);
 
+    // ✅ Parse subscription date
     let parsedSubscriptionDate = new Date(subscriptionDate);
     if (isNaN(parsedSubscriptionDate.getTime())) {
-      parsedSubscriptionDate = new Date(); // fallback to now if invalid
+      parsedSubscriptionDate = new Date(); // fallback to now
     }
 
+    // ✅ Create subscription
     const newSubscription = new Subscription({
       user: userId,
       plan,
@@ -46,10 +255,7 @@ exports.createSubscription = async (req, res) => {
       showDate: subscriptionDate,
     });
 
-    // Debugging logs to verify user and referrer
-    // console.log("Creating subscription for user:", user);
-
-    // Check if the user creating the subscription has any existing subscriptions
+    // ✅ Check subscription history
     const userSubscriptions = await Subscription.find({ user: userId });
     const isFirstSubscription = userSubscriptions.length === 0;
 
@@ -57,28 +263,22 @@ exports.createSubscription = async (req, res) => {
       const lastSub = await Subscription.findOne({ user: userId }).sort({
         subscriptionDate: -1,
       });
-
       if (lastSub && amount < lastSub.amount) {
         return res.status(400).json({
           message: `You cannot subscribe with an amount less than your last subscription of $${lastSub.amount}`,
         });
       }
     }
-    // 🎁 Referral Bonus Logic
-    const referrer = await User.findOne({
-      "inviteCode.userInvited": user._id,
-    });
-    // console.log("Referrer:", referrer);
 
+    // ✅ Referral Bonus
+    const referrer = await User.findOne({ "inviteCode.userInvited": user._id });
     if (referrer) {
-      // Set bonus rate based on the user's subscription history
       const bonusRate = isFirstSubscription ? 0.15 : 0.005;
       const bonusAmount = amount * bonusRate;
 
       referrer.accountBalance += bonusAmount;
       referrer.inviteCode.bonusAmount =
         (referrer.inviteCode.bonusAmount || 0) + bonusAmount;
-      // const date = new Date().toLocaleString();
 
       const bonus = new Bonus({
         user: referrer._id,
@@ -93,7 +293,8 @@ exports.createSubscription = async (req, res) => {
       referrer.userTransactionTotal.bonusHistoryTotal += bonusAmount;
       referrer.userTransaction.bonusHistory.push(bonus._id);
       await referrer.save();
-      const emailDetails = {
+
+      sendEmail({
         email: referrer.email,
         subject: isFirstSubscription
           ? "First-Time Referral Bonus Earned"
@@ -101,112 +302,93 @@ exports.createSubscription = async (req, res) => {
         html: isFirstSubscription
           ? referralCommissionEmail(referrer, bonusAmount)
           : recurringReferralBonusEmail(referrer, bonusAmount),
-      };
-      sendEmail(emailDetails);
+      });
     }
 
-    // Save the subscription and user
+    // ✅ Save subscription and user
     await newSubscription.save();
     user.isSubscribed = true;
     user.userSubscription.push(newSubscription._id);
     user.userTransaction.subscriptionsHistory.push(newSubscription._id);
     await user.save();
 
-    const dateObj = new Date(subscriptionDate);
-    const hours = dateObj.getHours(); // 6
-    const minutes = dateObj.getMinutes();
-    // console.log("my datwe", dateObj, hours, minutes);
+    // ✅ Schedule daily cron job at subscription time
+    const hours = parsedSubscriptionDate.getHours();
+    const minutes = parsedSubscriptionDate.getMinutes();
 
-    // ✅ Schedule cron job to run every 5 minutes
+    cron.schedule(`${minutes} ${hours} * * *`, async () => {
+      try {
+        const activeSubscriptions = await Subscription.find({
+          status: "active",
+        });
 
-    cron.schedule(
-      `${minutes} ${hours} * * *`, // every day at the subscription time
-      async () => {
-        try {
-          const activeSubscriptions = await Subscription.find({
-            status: "active",
-          });
-          for (const subscription of activeSubscriptions) {
-            const user = await User.findById(subscription.user);
-            if (!user) continue;
+        for (const subscription of activeSubscriptions) {
+          const user = await User.findById(subscription.user);
+          if (!user) continue;
 
-            const now = new Date();
+          const now = new Date();
+          const subscriptionStartTime = moment(
+            subscription.subscriptionDate
+          ).toDate();
+          const lastBonusTime =
+            subscription.lastBonusAt || subscriptionStartTime;
 
-            // Parse subscription start time
-            const subscriptionStartTime = moment(
-              subscription.subscriptionDate,
-              "M/D/YYYY, h:mm:ss A"
-            ).toDate();
+          const nextBonusTime = new Date(lastBonusTime);
+          nextBonusTime.setDate(nextBonusTime.getDate() + 1);
 
-            const lastBonusTime =
-              subscription.lastBonusAt || subscriptionStartTime;
+          const endDate = new Date(subscription.endDate);
+          const timeUntilEnd = endDate - now;
+          const isLastDay = timeUntilEnd <= 24 * 60 * 60 * 1000;
 
-            // Calculate next eligible bonus time (exactly 24 hours after lastBonusAt)
-            const nextBonusTime = new Date(lastBonusTime);
-            nextBonusTime.setDate(nextBonusTime.getDate() + 1);
-
-            // Calculate if today is the last day (less than 24 hours left)
-            const endDate = new Date(subscription.endDate);
-            const timeUntilEnd = endDate - now;
-            const isLastDay = timeUntilEnd <= 24 * 60 * 60 * 1000;
-
-            // ✅ Send reminder email one day before expiration
-            if (isLastDay && !subscription.isSubscriptionRecycle) {
-              const emailDetails = {
-                email: user.email,
-                subject: "Contribution Cycle Starting Soon",
-                html: contributionCycleStartsEmail(user, subscription),
-              };
-              await sendEmail(emailDetails);
-
-              subscription.isSubscriptionRecycle = true;
-              await subscription.save();
-            }
-
-            // ✅ Add daily bonus exactly 24 hours after lastBonusAt, but not on last day
-            if (!isLastDay && now >= nextBonusTime) {
-              const dailyBonus = subscription.amount * 0.2;
-              user.accountBalance += dailyBonus;
-              user.userTransactionTotal.dailyInterestHistoryTotal += dailyBonus;
-
-              const interest = new DailyInterest({
-                user: user._id,
-                subscription: subscription._id,
-                amount: dailyBonus,
-                date: now.toLocaleString(),
-              });
-
-              await interest.save();
-              user.userTransaction.dailyInterestHistory.push(interest._id);
-              await user.save();
-
-              subscription.lastBonusAt = now;
-              await subscription.save();
-            }
-
-            // ✅ Expire subscription if end date reached
-            if (now >= subscription.endDate) {
-              subscription.status = "expired";
-              await subscription.save();
-            }
+          // Reminder email
+          if (isLastDay && !subscription.isSubscriptionRecycle) {
+            sendEmail({
+              email: user.email,
+              subject: "Contribution Cycle Starting Soon",
+              html: contributionCycleStartsEmail(user, subscription),
+            });
+            subscription.isSubscriptionRecycle = true;
+            await subscription.save();
           }
 
-          // console.log("✅ Daily subscription cron job completed.");
-        } catch (error) {
-          console.error("❌ Cron job error:", error.message);
-        }
-      },
-      {
-        scheduled: true,
-      }
-    );
+          // Daily bonus
+          if (!isLastDay && now >= nextBonusTime) {
+            const dailyBonus = subscription.amount * 0.2;
+            user.accountBalance += dailyBonus;
+            user.userTransactionTotal.dailyInterestHistoryTotal += dailyBonus;
 
-    const emailDetails = {
+            const interest = new DailyInterest({
+              user: user._id,
+              subscription: subscription._id,
+              amount: dailyBonus,
+              date: now.toLocaleString(),
+            });
+
+            await interest.save();
+            user.userTransaction.dailyInterestHistory.push(interest._id);
+            await user.save();
+
+            subscription.lastBonusAt = now;
+            await subscription.save();
+          }
+
+          // Expire subscription
+          if (now >= subscription.endDate) {
+            subscription.status = "expired";
+            await subscription.save();
+          }
+        }
+      } catch (error) {
+        console.error("❌ Cron job error:", error.message);
+      }
+    });
+
+    // ✅ Confirmation email
+    sendEmail({
       email: user.email,
       subject: "Subscription Created Successfully",
       html: subscriptionCreatedEmail(user, newSubscription),
-    };
-    sendEmail(emailDetails);
+    });
 
     res.status(201).json({
       message: "Subscription created successfully",
