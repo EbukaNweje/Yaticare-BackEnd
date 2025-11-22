@@ -1,6 +1,5 @@
 const User = require("../models/User");
 const Subscription = require("../models/Subscription");
-const cron = require("node-cron");
 const Bonus = require("../models/Bonus");
 const DailyInterest = require("../models/DailyInterest");
 const mongoose = require("mongoose");
@@ -315,73 +314,6 @@ exports.createSubscription = async (req, res) => {
     // ✅ Schedule daily cron job at subscription time
     const hours = parsedSubscriptionDate.getHours();
     const minutes = parsedSubscriptionDate.getMinutes();
-
-    cron.schedule(`${minutes} ${hours} * * *`, async () => {
-      try {
-        const activeSubscriptions = await Subscription.find({
-          status: "active",
-        });
-
-        for (const subscription of activeSubscriptions) {
-          const user = await User.findById(subscription.user);
-          if (!user) continue;
-
-          const now = new Date();
-          const subscriptionStartTime = moment(
-            subscription.subscriptionDate
-          ).toDate();
-          const lastBonusTime =
-            subscription.lastBonusAt || subscriptionStartTime;
-
-          const nextBonusTime = new Date(lastBonusTime);
-          nextBonusTime.setDate(nextBonusTime.getDate() + 1);
-
-          const endDate = new Date(subscription.endDate);
-          const timeUntilEnd = endDate - now;
-          const isLastDay = timeUntilEnd <= 24 * 60 * 60 * 1000;
-
-          // Reminder email
-          if (isLastDay && !subscription.isSubscriptionRecycle) {
-            sendEmail({
-              email: user.email,
-              subject: "Contribution Cycle Starting Soon",
-              html: contributionCycleStartsEmail(user, subscription),
-            });
-            subscription.isSubscriptionRecycle = true;
-            await subscription.save();
-          }
-
-          // Daily bonus
-          if (!isLastDay && now >= nextBonusTime) {
-            const dailyBonus = subscription.amount * 0.2;
-            user.accountBalance += dailyBonus;
-            user.userTransactionTotal.dailyInterestHistoryTotal += dailyBonus;
-
-            const interest = new DailyInterest({
-              user: user._id,
-              subscription: subscription._id,
-              amount: dailyBonus,
-              date: now.toLocaleString(),
-            });
-
-            await interest.save();
-            user.userTransaction.dailyInterestHistory.push(interest._id);
-            await user.save();
-
-            subscription.lastBonusAt = now;
-            await subscription.save();
-          }
-
-          // Expire subscription
-          if (now >= subscription.endDate) {
-            subscription.status = "expired";
-            await subscription.save();
-          }
-        }
-      } catch (error) {
-        console.error("❌ Cron job error:", error.message);
-      }
-    });
 
     // ✅ Confirmation email
     sendEmail({
