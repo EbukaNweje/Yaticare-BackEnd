@@ -40,6 +40,15 @@ exports.createSubscription = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
     if (user.accountBalance < amount)
       return res.status(400).json({ message: "Insufficient balance" });
+    // ✅ Check last subscription amount
+    const lastuserSub = await Subscription.findOne({ user: userId }).sort({
+      createdAt: -1,
+    });
+    if (lastuserSub && amount < lastuserSub.amount) {
+      return res.status(400).json({
+        message: `You cannot subscribe with an amount less than your last subscription of $${lastSub.amount}`,
+      });
+    }
 
     const parsedSubscriptionDate = subscriptionDate
       ? new Date(subscriptionDate)
