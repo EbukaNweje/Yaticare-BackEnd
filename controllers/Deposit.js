@@ -10,6 +10,7 @@ const {
   RequestDEmail,
   depositCompletedEmail,
 } = require("../middleware/emailTemplate");
+const cloudinary = require("../utilities/cloudinary");
 
 exports.userDeposit = async (req, res, next) => {
   try {
