@@ -1,0 +1,128 @@
+exports.userDeposit = async (req, res, next) => {
+  try {
+    const { userId, amount, PaymentType, depositDate, depositWallet } =
+      req.body;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return next(createError(404, "User not found"));
+    }
+
+    const newAmount = Number(amount);
+
+    if (isNaN(newAmount)) {
+      return res.status(400).json({ message: `Amount must be a number` });
+    }
+    if (!req.files || !req.files.proofFile) {
+      return res.status(400).json({ message: "Proof file is required" });
+    }
+
+    if (PaymentType != "USDT" && PaymentType != "BANK") {
+      return res.status(404).json({
+        message: "PaymentType not available",
+      });
+    }
+
+    if (PaymentType == "BANK") {
+      return res.status(404).json({
+        message: `${PaymentType} comming soon!`,
+      });
+    }
+    //console.log("seen");
+
+    // Perform the currency conversion
+    let response;
+    let roundedNumber;
+
+    if (PaymentType == "USDT") {
+      response = await axios.get(
+        `https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=ngn`
+      );
+      const conversionRates = response.data.tether.ngn;
+      // console.log("this is usdt:", conversionRates);
+      const myTotal = Number(conversionRates);
+      const btcAmount = newAmount / myTotal;
+      roundedNumber = btcAmount.toFixed(9);
+    }
+
+    const Depo = await depositModel.find();
+    const image = req.files.proofFile.tempFilePath;
+    const uploadResponse = await cloudinary.uploader.upload(image);
+
+    // Save the deposit details
+    const deposit = new depositModel({
+      user: user._id,
+      amount: `${newAmount}`,
+      amountusdt: `${roundedNumber}`,
+      PaymentType: PaymentType,
+      total: roundedNumber,
+      status: "pending",
+      transactionType: Depo.transactionType,
+      depositDate: depositDate,
+      depositWallet: depositWallet,
+      depositDateChecked: new Date(),
+      proofFile: uploadResponse.secure_url,
+    });
+    // deposit.image = uploadResponse.secure_url;
+    await deposit.save();
+
+    deposit.user = userId;
+
+    user.userTransaction.deposit.push(deposit._id);
+    await user.save();
+
+    const History = new historyModel({
+      userId: user._id,
+      transactionType: deposit.transactionType,
+      amount: `${roundedNumber}`,
+    });
+    await History.save();
+
+    // Save user's deposit first
+    // ... (your deposit saving logic here)
+
+    // After deposit, check if user has a referrer
+    // if (user.referralCode) {
+    //   const referrer = await user.findOne({
+    //     "inviteCode.code": user.referralCode,
+    //   });
+
+    //   if (referrer) {
+    //     const commission = (1.5 / 100) * roundedNumber; // 1.5% of deposit
+    //     referrer.accountBalance += commission;
+
+    //     await referrer.save();
+    //     const emailDetails = {
+    //       email: user.email,
+    //       subject: "Deposit Request Initiated",
+    //       html: depositRequestEmail(user),
+    //     };
+    //     sendEmail(emailDetails);
+
+    //     if (deposit.status === "pending") {
+    //       return res.status(200).json({
+    //         message: `Deposit made and pending`,
+    //       });
+    //     }
+    //     if (deposit.status === "confirmed") {
+    //       User.accountBalance += roundedNumber;
+    //     }
+    //   }
+    // }
+
+    const emailDetails = {
+      email: user.email,
+      subject: "Deposit Request Initiated",
+      html: RequestDEmail(user),
+    };
+    await sendEmail(emailDetails);
+
+    res.status(200).json({
+      message: "Deposit successful!",
+      emailDetails,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

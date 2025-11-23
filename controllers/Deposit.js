@@ -17,113 +17,63 @@ exports.userDeposit = async (req, res, next) => {
       req.body;
 
     const user = await User.findById(userId);
-
-    if (!user) {
-      return next(createError(404, "User not found"));
-    }
+    if (!user) return next(createError(404, "User not found"));
 
     const newAmount = Number(amount);
-
     if (isNaN(newAmount)) {
-      return res.status(400).json({ message: `Amount must be a number` });
+      return res.status(400).json({ message: "Amount must be a number" });
     }
+
     if (!req.files || !req.files.proofFile) {
       return res.status(400).json({ message: "Proof file is required" });
     }
 
-    if (PaymentType != "USDT" && PaymentType != "BANK") {
-      return res.status(404).json({
-        message: "PaymentType not available",
-      });
+    if (PaymentType !== "USDT") {
+      return res.status(404).json({ message: `${PaymentType} coming soon!` });
     }
 
-    if (PaymentType == "BANK") {
-      return res.status(404).json({
-        message: `${PaymentType} comming soon!`,
-      });
-    }
-    //console.log("seen");
+    // Convert to USDT
+    const response = await axios.get(
+      `https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=ngn`
+    );
+    const conversionRate = Number(response.data.tether.ngn);
+    const btcAmount = newAmount / conversionRate;
+    const roundedNumber = btcAmount.toFixed(9);
 
-    // Perform the currency conversion
-    let response;
-    let roundedNumber;
-
-    if (PaymentType == "USDT") {
-      response = await axios.get(
-        `https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=ngn`
-      );
-      const conversionRates = response.data.tether.ngn;
-      // console.log("this is usdt:", conversionRates);
-      const myTotal = Number(conversionRates);
-      const btcAmount = newAmount / myTotal;
-      roundedNumber = btcAmount.toFixed(9);
-    }
-
-    const Depo = await depositModel.find();
+    // Upload proof
     const image = req.files.proofFile.tempFilePath;
     const uploadResponse = await cloudinary.uploader.upload(image);
 
-    // Save the deposit details
+    // Save deposit
     const deposit = new depositModel({
       user: user._id,
-      amount: `${newAmount}`,
-      amountusdt: `${roundedNumber}`,
-      PaymentType: PaymentType,
+      amount: newAmount,
+      amountusdt: roundedNumber,
+      PaymentType,
       total: roundedNumber,
       status: "pending",
-      transactionType: Depo.transactionType,
-      depositDate: depositDate,
-      depositWallet: depositWallet,
+      transactionType: "deposit", // ✅ fixed
+      depositDate,
+      depositWallet,
       depositDateChecked: new Date(),
       proofFile: uploadResponse.secure_url,
     });
-    // deposit.image = uploadResponse.secure_url;
     await deposit.save();
 
-    deposit.user = userId;
-
+    // Update user transactions
+    user.userTransaction.deposit = user.userTransaction.deposit || [];
     user.userTransaction.deposit.push(deposit._id);
     await user.save();
 
-    const History = new historyModel({
+    // Save history
+    const history = new historyModel({
       userId: user._id,
       transactionType: deposit.transactionType,
-      amount: `${roundedNumber}`,
+      amount: roundedNumber,
     });
-    await History.save();
+    await history.save();
 
-    // Save user's deposit first
-    // ... (your deposit saving logic here)
-
-    // After deposit, check if user has a referrer
-    // if (user.referralCode) {
-    //   const referrer = await user.findOne({
-    //     "inviteCode.code": user.referralCode,
-    //   });
-
-    //   if (referrer) {
-    //     const commission = (1.5 / 100) * roundedNumber; // 1.5% of deposit
-    //     referrer.accountBalance += commission;
-
-    //     await referrer.save();
-    //     const emailDetails = {
-    //       email: user.email,
-    //       subject: "Deposit Request Initiated",
-    //       html: depositRequestEmail(user),
-    //     };
-    //     sendEmail(emailDetails);
-
-    //     if (deposit.status === "pending") {
-    //       return res.status(200).json({
-    //         message: `Deposit made and pending`,
-    //       });
-    //     }
-    //     if (deposit.status === "confirmed") {
-    //       User.accountBalance += roundedNumber;
-    //     }
-    //   }
-    // }
-
+    // Send email
     const emailDetails = {
       email: user.email,
       subject: "Deposit Request Initiated",
@@ -131,10 +81,7 @@ exports.userDeposit = async (req, res, next) => {
     };
     await sendEmail(emailDetails);
 
-    res.status(200).json({
-      message: "Deposit successful!",
-      emailDetails,
-    });
+    res.status(200).json({ message: "Deposit successful!", emailDetails });
   } catch (error) {
     next(error);
   }
