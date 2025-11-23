@@ -105,7 +105,6 @@ exports.getAllDeposits = async (req, res) => {
     // Return the retrieved deposit records with user information
     res.status(200).json({ data: deposits });
   } catch (error) {
-    // Handle errors
     console.error("Error fetching deposits:", error);
     res.status(500).json({ error: "Internal server error" });
   }
