@@ -77,7 +77,6 @@ exports.userDeposit = async (req, res, next) => {
     });
     await history.save();
 
-    // Send email
     const emailDetails = {
       email: user.email,
       subject: "Deposit Request Initiated",
