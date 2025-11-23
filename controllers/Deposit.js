@@ -34,7 +34,8 @@ exports.userDeposit = async (req, res, next) => {
 
     // Convert to USDT
     const response = await axios.get(
-      `https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=ngn`
+      `https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=ngn`,
+      { timeout: 4000 }
     );
     const conversionRate = Number(response.data.tether.ngn);
     const btcAmount = newAmount / conversionRate;
