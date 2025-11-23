@@ -14,8 +14,14 @@ const cloudinary = require("../utilities/cloudinary");
 
 exports.userDeposit = async (req, res, next) => {
   try {
-    const { userId, amount, PaymentType, depositDate, depositWallet } =
-      req.body;
+    const {
+      userId,
+      amount,
+      PaymentType,
+      depositDate,
+      depositWallet,
+      depositWalletCoinType,
+    } = req.body;
 
     const user = await User.findById(userId);
     if (!user) return next(createError(404, "User not found"));
@@ -58,6 +64,7 @@ exports.userDeposit = async (req, res, next) => {
       transactionType: "deposit",
       depositDate,
       depositWallet,
+      depositWalletCoinType,
       depositDateChecked: new Date(),
       proofFile: uploadResponse.secure_url,
     });

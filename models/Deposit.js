@@ -38,6 +38,9 @@ const depositSchema = new mongoose.Schema(
     depositWallet: {
       type: String,
     },
+    depositWalletCoinType: {
+      type: String,
+    },
   },
   { timestamps: true }
 );
