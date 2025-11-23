@@ -60,10 +60,6 @@ exports.userDeposit = async (req, res, next) => {
     }
 
     const Depo = await depositModel.find();
-    // console.log("first", userTimeZone);
-    // const formattedDate = DateTime.now()
-    //   .setZone(userTimeZone || "UTC")
-    //   .toFormat("ccc LLL dd yyyy HH:mm:ss");
     const image = req.files.proofFile.tempFilePath;
     const uploadResponse = await cloudinary.uploader.upload(image);
 
