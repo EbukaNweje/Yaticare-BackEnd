@@ -17,7 +17,6 @@ exports.userDeposit = async (req, res, next) => {
       req.body;
 
     const user = await User.findById(userId);
-    const image = req.files.proofFile.tempFilePath;
 
     if (!user) {
       return next(createError(404, "User not found"));
@@ -25,10 +24,11 @@ exports.userDeposit = async (req, res, next) => {
 
     const newAmount = Number(amount);
 
-    if (newAmount === NaN || newAmount !== newAmount) {
-      return res.status(400).json({
-        message: `You can only deposit ${newAmount}`,
-      });
+    if (isNaN(newAmount)) {
+      return res.status(400).json({ message: `Amount must be a number` });
+    }
+    if (!req.files || !req.files.proofFile) {
+      return res.status(400).json({ message: "Proof file is required" });
     }
 
     if (PaymentType != "USDT" && PaymentType != "BANK") {
@@ -64,6 +64,8 @@ exports.userDeposit = async (req, res, next) => {
     // const formattedDate = DateTime.now()
     //   .setZone(userTimeZone || "UTC")
     //   .toFormat("ccc LLL dd yyyy HH:mm:ss");
+    const image = req.files.proofFile.tempFilePath;
+
     const uploadResponse = await cloudinary.uploader.upload(image);
 
     // Save the deposit details
