@@ -63,7 +63,7 @@ exports.createSubscription = async (req, res) => {
       showDate: startDate.toLocaleString(),
       lastBonusAt: null,
       daysPaid: 0,
-      durationDays,
+      durationInDays,
       status: "active",
     });
 
@@ -162,12 +162,10 @@ exports.recycleSubscription = async (req, res) => {
       subscription.status === "expired" || now >= subscription.endDate;
 
     if (!isSecondToLastDay && !isExpired)
-      return res
-        .status(400)
-        .json({
-          message:
-            "You can only recycle on the second-to-last day or after expiration.",
-        });
+      return res.status(400).json({
+        message:
+          "You can only recycle on the second-to-last day or after expiration.",
+      });
 
     // Pay missed day7 interest if needed
     if (subscription.daysPaid >= 6 && subscription.isPaused) {
