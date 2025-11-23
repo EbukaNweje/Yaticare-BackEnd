@@ -55,7 +55,7 @@ exports.userDeposit = async (req, res, next) => {
       PaymentType,
       total: roundedNumber,
       status: "pending",
-      transactionType: "deposit", // ✅ fixed
+      transactionType: "deposit",
       depositDate,
       depositWallet,
       depositDateChecked: new Date(),
