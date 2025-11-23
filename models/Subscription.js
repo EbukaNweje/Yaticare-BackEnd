@@ -27,7 +27,7 @@ const SubscriptionSchema = new mongoose.Schema(
     status: { type: String, enum: ["active", "expired"], default: "active" },
 
     // Optional: keep original duration so recycle can reuse it
-    durationDays: { type: Number, required: true },
+    durationInDays: { type: Number, required: true },
 
     // For human-readable dates if you want
     subscriptionDate: { type: Date, default: Date.now },

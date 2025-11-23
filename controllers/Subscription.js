@@ -194,7 +194,7 @@ exports.recycleSubscription = async (req, res) => {
     }
 
     // Restart subscription cycle
-    const duration = subscription.durationDays || 7;
+    const duration = subscription.durationInDays || 7;
     const newStart = new Date();
     const newEnd = addDays(newStart, duration);
 
