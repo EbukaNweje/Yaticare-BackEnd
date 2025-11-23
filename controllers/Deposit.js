@@ -33,7 +33,6 @@ exports.userDeposit = async (req, res, next) => {
       return res.status(404).json({ message: `${PaymentType} coming soon!` });
     }
 
-    // Convert to USDT
     const response = await axios.get(
       `https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=ngn`,
       { timeout: 4000 }
