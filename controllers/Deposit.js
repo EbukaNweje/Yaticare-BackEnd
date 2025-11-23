@@ -65,7 +65,6 @@ exports.userDeposit = async (req, res, next) => {
     //   .setZone(userTimeZone || "UTC")
     //   .toFormat("ccc LLL dd yyyy HH:mm:ss");
     const image = req.files.proofFile.tempFilePath;
-
     const uploadResponse = await cloudinary.uploader.upload(image);
 
     // Save the deposit details
@@ -80,8 +79,9 @@ exports.userDeposit = async (req, res, next) => {
       depositDate: depositDate,
       depositWallet: depositWallet,
       depositDateChecked: new Date(),
+      proofFile: uploadResponse.secure_url,
     });
-    deposit.image = uploadResponse.secure_url;
+    // deposit.image = uploadResponse.secure_url;
     await deposit.save();
 
     deposit.user = userId;
