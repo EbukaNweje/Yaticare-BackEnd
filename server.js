@@ -18,6 +18,8 @@ mongoose
   });
 
 const app = require("./App");
+// console.log(new Date().toLocaleString());
+// console.log(new Date().toISOString());
 
 app.listen(process.env.PORT || 5000, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
