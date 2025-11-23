@@ -32,5 +32,17 @@ router.get("/totalpendingwithdrawals", Admin.totalPendingWithdrawals);
 router.get("/totalblockedandactiveusers", Admin.totalBlockedAndActiveUsers);
 router.get("/totalactivesubscribers", Admin.totalActiveSubscribers);
 router.get("/getadmins", Admin.getAdmins);
-
+router.post("/createWalletAddress", SuperAdminAuth, Admin.CreateWallet);
+router.get("/getallWalletAddress", SuperAdminAuth, Admin.getAllWalletAddress);
+router.delete(
+  "/deleteWalletAddress/:id",
+  SuperAdminAuth,
+  Admin.deleteWalletAddress
+);
+router.patch("/updateWalletAdddrss", SuperAdminAuth, Admin.updateWalletAddress);
+router.get(
+  "/getoneWalletAddress/:id",
+  SuperAdminAuth,
+  Admin.getOneWalletAddress
+);
 module.exports = router;
