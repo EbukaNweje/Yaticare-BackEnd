@@ -17,6 +17,7 @@ exports.userDeposit = async (req, res, next) => {
       req.body;
 
     const user = await User.findById(userId);
+    const image = req.files.image.tempFilePath;
 
     if (!user) {
       return next(createError(404, "User not found"));
@@ -63,6 +64,7 @@ exports.userDeposit = async (req, res, next) => {
     // const formattedDate = DateTime.now()
     //   .setZone(userTimeZone || "UTC")
     //   .toFormat("ccc LLL dd yyyy HH:mm:ss");
+    const uploadResponse = await cloudinary.uploader.upload(image);
 
     // Save the deposit details
     const deposit = new depositModel({
@@ -77,6 +79,7 @@ exports.userDeposit = async (req, res, next) => {
       depositWallet: depositWallet,
       depositDateChecked: new Date(),
     });
+    deposit.image = uploadResponse.secure_url;
     await deposit.save();
 
     deposit.user = userId;

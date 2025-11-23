@@ -18,6 +18,7 @@ const depositSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    image: { type: String, required: true },
     PaymentType: {
       type: String,
       enum: ["USDT", "BANK"],

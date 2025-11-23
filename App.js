@@ -10,13 +10,21 @@ const withdrawalRoutes = require("./routes/withdrawal");
 const subscriptions = require("./routes/Subscription");
 const admin = require("./routes/admin");
 const morgan = require("morgan");
+const fileUploader = require("express-fileupload");
+const bodyParser = require("body-parser");
 
 const app = express();
 
 app.use(cors({ origin: "*" }));
+app.use(
+  fileUploader({
+    useTempFiles: true,
+  })
+);
 app.use(morgan("dev"));
 app.use(cookieParser());
 app.use(express.json());
+app.use(bodyParser.json());
 
 app.use("/api/auth", AuthRoutes);
 app.use("/api/user", UserRoutes);

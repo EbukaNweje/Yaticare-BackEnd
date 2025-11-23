@@ -14,51 +14,43 @@ const {
 const { sendEmail } = require("../utilities/brevo");
 const AuditLog = require("../models/AuditLog");
 
-// Helper
 function addDays(date, days) {
+  if (!(date instanceof Date) || isNaN(date.getTime())) date = new Date();
   const d = new Date(date);
   d.setDate(d.getDate() + days);
   return d;
 }
 
+// helper: check same calendar day
+function isSameDay(dateA, dateB) {
+  return (
+    dateA.getFullYear() === dateB.getFullYear() &&
+    dateA.getMonth() === dateB.getMonth() &&
+    dateA.getDate() === dateB.getDate()
+  );
+}
+
 exports.createSubscription = async (req, res) => {
   try {
     const { userId, plan, amount, durationInDays, subscriptionDate } = req.body;
-
-    if (!userId || !plan || !amount || !durationInDays) {
+    if (!userId || !plan || !amount || !durationInDays)
       return res.status(400).json({ message: "Missing required fields" });
-    }
 
-    // Validate user
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
-    if (user.accountBalance < amount) {
+    if (user.accountBalance < amount)
       return res.status(400).json({ message: "Insufficient balance" });
-    }
 
-    // Optional: check plan exists (InvestmentPlan model)
-    // const planDoc = await InvestmentPlan.findById(plan);
-    // if (!planDoc) return res.status(404).json({ message: "Plan not found" });
-
-    // Prevent subscribing with less amount than last subscription (as your logic)
-    const lastSub = await Subscription.findOne({ user: userId }).sort({
-      createdAt: -1,
-    });
-    if (lastSub && amount < lastSub.amount) {
-      return res.status(400).json({
-        message: `You cannot subscribe with an amount less than your last subscription of ${lastSub.amount}`,
-      });
-    }
-
-    // Deduct amount
-    user.accountBalance -= amount;
-
-    // Calculate dates
     const parsedSubscriptionDate = subscriptionDate
       ? new Date(subscriptionDate)
       : new Date();
-    const startDate = parsedSubscriptionDate;
+    const startDate = isNaN(parsedSubscriptionDate.getTime())
+      ? new Date()
+      : parsedSubscriptionDate;
     const endDate = addDays(startDate, durationInDays);
+
+    // Deduct subscription amount
+    user.accountBalance -= amount;
 
     // Create subscription
     const newSubscription = new Subscription({
@@ -69,17 +61,19 @@ exports.createSubscription = async (req, res) => {
       endDate,
       subscriptionDate: startDate,
       showDate: startDate.toLocaleString(),
-      lastBonusAt: null, // not paid yet
+      lastBonusAt: null,
       daysPaid: 0,
-      durationDays: durationInDays,
+      durationDays,
       status: "active",
     });
 
-    // Referral bonus (if you want)
-    // (Your original logic gave a referral bonus to referrer; keep that if needed)
+    // Referral bonus
     const referrer = await User.findOne({ "inviteCode.userInvited": user._id });
+    const lastSub = await Subscription.findOne({ user: userId }).sort({
+      createdAt: -1,
+    });
+    const isFirstSubscription = !lastSub;
     if (referrer) {
-      const isFirstSubscription = !lastSub;
       const bonusRate = isFirstSubscription ? 0.15 : 0.005;
       const bonusAmount = amount * bonusRate;
 
@@ -95,9 +89,11 @@ exports.createSubscription = async (req, res) => {
           : "Recurring Referral Bonus",
         date: new Date().toLocaleString(),
       });
-
       await bonus.save();
-      referrer.userTransactionTotal.bonusHistoryTotal += bonusAmount;
+      referrer.userTransactionTotal.bonusHistoryTotal =
+        (referrer.userTransactionTotal.bonusHistoryTotal || 0) + bonusAmount;
+      referrer.userTransaction.bonusHistory =
+        referrer.userTransaction.bonusHistory || [];
       referrer.userTransaction.bonusHistory.push(bonus._id);
       await referrer.save();
 
@@ -106,9 +102,7 @@ exports.createSubscription = async (req, res) => {
         subject: isFirstSubscription
           ? "First-Time Referral Bonus Earned"
           : "Recurring Referral Bonus Earned",
-        html: isFirstSubscription
-          ? referralCommissionEmail(referrer, bonusAmount)
-          : recurringReferralBonusEmail(referrer, bonusAmount),
+        html: referralCommissionEmail(referrer, bonusAmount),
       });
     }
 
@@ -123,7 +117,7 @@ exports.createSubscription = async (req, res) => {
     user.userTransaction.subscriptionsHistory.push(newSubscription._id);
     await user.save();
 
-    // Send confirmation
+    // Send confirmation email
     sendEmail({
       email: user.email,
       subject: "Subscription Created Successfully",
@@ -162,28 +156,22 @@ exports.recycleSubscription = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const now = new Date();
-
-    // Determine second-to-last day (day 6)
     const secondToLast = addDays(subscription.endDate, -1);
-    const isSecondToLastDay =
-      secondToLast.toDateString() === now.toDateString();
+    const isSecondToLastDay = isSameDay(secondToLast, now);
     const isExpired =
       subscription.status === "expired" || now >= subscription.endDate;
 
-    if (!isSecondToLastDay && !isExpired) {
+    if (!isSecondToLastDay && !isExpired)
       return res
         .status(400)
         .json({
           message:
             "You can only recycle on the second-to-last day or after expiration.",
         });
-    }
 
-    // If there is a missing day7 payment (user didn't recycle and day7 missed), pay it immediately
-    // Condition: daysPaid >= 6 AND isPaused (meaning day7 was missed)
+    // Pay missed day7 interest if needed
     if (subscription.daysPaid >= 6 && subscription.isPaused) {
       const dailyBonus = subscription.amount * 0.2;
-
       user.accountBalance += dailyBonus;
       user.userTransactionTotal.dailyInterestHistoryTotal =
         (user.userTransactionTotal.dailyInterestHistoryTotal || 0) + dailyBonus;
@@ -194,36 +182,21 @@ exports.recycleSubscription = async (req, res) => {
         amount: dailyBonus,
         date: now.toLocaleString(),
       });
-
       await interest.save();
-
       user.userTransaction.dailyInterestHistory =
         user.userTransaction.dailyInterestHistory || [];
       user.userTransaction.dailyInterestHistory.push(interest._id);
 
-      // resume subscription by paying the missed interest immediately
-      subscription.daysPaid = subscription.daysPaid + 1; // grant the missed 7th payment
+      subscription.daysPaid += 1;
       subscription.isPaused = false;
       subscription.mustRecycle = false;
       subscription.lastBonusAt = now;
-      // We'll restart the cycle below after resetting dates
-      await user.save();
 
-      await AuditLog.create({
-        type: "RECYCLE_PAY_MISSED",
-        user: user._id,
-        subscription: subscription._id,
-        message: `Paid missed daily interest of ${dailyBonus} upon recycle.`,
-      });
+      await user.save();
     }
 
-    // Reset / restart cycle: keep same duration
-    const duration =
-      subscription.durationDays ||
-      Math.ceil(
-        (subscription.endDate - subscription.startDate) / (1000 * 60 * 60 * 24)
-      ) ||
-      7;
+    // Restart subscription cycle
+    const duration = subscription.durationDays || 7;
     const newStart = new Date();
     const newEnd = addDays(newStart, duration);
 
@@ -236,11 +209,11 @@ exports.recycleSubscription = async (req, res) => {
     subscription.status = "active";
     subscription.mustRecycle = false;
     subscription.isPaused = false;
-    subscription.isSubscriptionRecycle = true; // flag used for email reminder logic
+    subscription.isSubscriptionRecycle = true;
 
     await subscription.save();
 
-    // Send referral commission to referrer on recycle if you want (0.5%)
+    // Referral commission for recycle (0.5%)
     const referrer = await User.findOne({ "inviteCode.userInvited": user._id });
     if (referrer) {
       const commission = subscription.amount * 0.005;
@@ -254,13 +227,10 @@ exports.recycleSubscription = async (req, res) => {
         reason: "Recycle Bonus",
         date: new Date().toLocaleString(),
       });
-
       await bonus.save();
-      referrer.userTransaction = referrer.userTransaction || {};
       referrer.userTransaction.bonusHistory =
         referrer.userTransaction.bonusHistory || [];
       referrer.userTransaction.bonusHistory.push(bonus._id);
-      referrer.userTransactionTotal = referrer.userTransactionTotal || {};
       referrer.userTransactionTotal.bonusHistoryTotal =
         (referrer.userTransactionTotal.bonusHistoryTotal || 0) + commission;
       await referrer.save();
@@ -270,27 +240,12 @@ exports.recycleSubscription = async (req, res) => {
         subject: "Referral Commission Earned",
         html: referralCommissionEmail(referrer, commission),
       });
-
-      await AuditLog.create({
-        type: "RECYCLE_REFERRAL",
-        user: referrer._id,
-        subscription: subscription._id,
-        message: `Referral commission of ${commission} paid for recycle.`,
-      });
     }
 
-    // send recycle confirmation to user
     sendEmail({
       email: user.email,
       subject: "Subscription Recycled Successfully",
       html: subscriptionRecycledEmail(user, subscription),
-    });
-
-    await AuditLog.create({
-      type: "RECYCLE",
-      user: user._id,
-      subscription: subscription._id,
-      message: "Subscription recycled and new cycle started.",
     });
 
     res
@@ -301,7 +256,6 @@ exports.recycleSubscription = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
 exports.getUserSubscriptions = async (req, res) => {
   try {
     const { userId } = req.params;
