@@ -46,7 +46,7 @@ exports.createSubscription = async (req, res) => {
     });
     if (lastuserSub && amount < lastuserSub.amount) {
       return res.status(400).json({
-        message: `You cannot subscribe with an amount less than your last subscription of $${lastSub.amount}`,
+        message: `You cannot subscribe with an amount less than your last subscription of $${lastuserSub.amount}`,
       });
     }
 
