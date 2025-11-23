@@ -45,6 +45,8 @@ exports.userDeposit = async (req, res, next) => {
     const image = req.files.proofFile.tempFilePath;
     const uploadResponse = await cloudinary.uploader.upload(image);
 
+    console.log("uploadResponse", uploadResponse);
+
     // Save deposit
     const deposit = new depositModel({
       user: user._id,
