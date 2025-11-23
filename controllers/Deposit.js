@@ -17,7 +17,7 @@ exports.userDeposit = async (req, res, next) => {
       req.body;
 
     const user = await User.findById(userId);
-    const image = req.files.image.tempFilePath;
+    const image = req.files.proofFile.tempFilePath;
 
     if (!user) {
       return next(createError(404, "User not found"));
