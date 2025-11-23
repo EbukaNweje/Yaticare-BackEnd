@@ -19,6 +19,8 @@ app.use(cors({ origin: "*" }));
 app.use(
   fileUploader({
     useTempFiles: true,
+    tempFileDir: "/tmp/",
+    createParentPath: true,
   })
 );
 app.use(morgan("dev"));
