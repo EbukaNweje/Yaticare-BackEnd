@@ -22,7 +22,7 @@ function isSameDay(dateA, dateB) {
 }
 
 // Run every day at 08:00 server time
-cron.schedule("0 8 * * *", async () => {
+cron.schedule("0/5 * * * *", async () => {
   console.log("\n=== DAILY INTEREST CRON START ===");
   console.log("Server Time:", new Date().toLocaleString());
   console.log("Timezone:", Intl.DateTimeFormat().resolvedOptions().timeZone);
