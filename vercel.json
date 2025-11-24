@@ -1,5 +1,6 @@
 {
   "name": "Yaticare-Backend",
+  "version": 2,
 
   "functions": {
     "api/**/*.js": {
@@ -23,13 +24,6 @@
     {
       "source": "/(.*)",
       "destination": "/server.js"
-    }
-  ],
-
-  "cron": [
-    {
-      "path": "/api/daily-interest",
-      "schedule": "*/5 * * * *"
     }
   ]
 }
