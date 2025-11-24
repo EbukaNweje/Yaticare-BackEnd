@@ -1,11 +1,11 @@
 {
-  "name": "Yaticare-Backend",
-  "builds": [
-    {
-      "src": "server.js",
-      "use": "@vercel/node"
+  "version": 2,
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "nodejs18.x"
     }
-  ],
+  },
+
   "headers": [
     {
       "source": "/api/(.*)",
@@ -17,17 +17,11 @@
       ]
     }
   ],
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/server.js"
-    }
-  ],
 
   "crons": [
     {
       "path": "/api/daily-interest",
-      "schedule": "0 8 * * *"
+      "schedule": "*/5 * * * *"
     }
   ]
 }
