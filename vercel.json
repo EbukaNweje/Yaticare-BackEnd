@@ -22,5 +22,12 @@
       "source": "/(.*)",
       "destination": "/server.js"
     }
+  ],
+
+  "crons": [
+    {
+      "path": "/api/daily-interest",
+      "schedule": "0 8 * * *"
+    }
   ]
 }
