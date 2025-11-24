@@ -1,13 +1,11 @@
 {
   "name": "Yaticare-Backend",
-  "version": 2,
-
-  "functions": {
-    "api/**/*.js": {
-      "runtime": "@vercel/node"
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
     }
-  },
-
+  ],
   "headers": [
     {
       "source": "/api/(.*)",
@@ -19,7 +17,6 @@
       ]
     }
   ],
-
   "rewrites": [
     {
       "source": "/(.*)",
