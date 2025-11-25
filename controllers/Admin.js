@@ -15,6 +15,7 @@ const {
 } = require("../middleware/emailTemplate");
 const { sendEmail } = require("../utilities/brevo");
 const AddWallet = require("../models/AddWallet");
+const { validationResult } = require("express-validator");
 
 exports.createAdmin = async (req, res, next) => {
   try {
