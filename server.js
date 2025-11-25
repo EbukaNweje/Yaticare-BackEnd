@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 dotenv.config({ path: "./config/index.env" });
 const Db = process.env.DATABASE;
+require("./utilities/cron"); // cron jobs
 
 mongoose
   .connect(Db, {
