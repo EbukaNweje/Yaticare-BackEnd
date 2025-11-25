@@ -69,7 +69,7 @@ exports.createSubscription = async (req, res) => {
       startDate,
       endDate,
       subscriptionDate: startDate,
-      showDate: startDate.toLocaleString(),
+      showDate: subscriptionDate,
       lastBonusAt: null,
       daysPaid: 0,
       durationInDays,
