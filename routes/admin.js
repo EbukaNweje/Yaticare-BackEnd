@@ -40,9 +40,5 @@ router.delete(
   Admin.deleteWalletAddress
 );
 router.patch("/updateWalletAdddrss", SuperAdminAuth, Admin.updateWalletAddress);
-router.get(
-  "/getoneWalletAddress/:id",
-  SuperAdminAuth,
-  Admin.getOneWalletAddress
-);
+router.get("/getoneWalletAddress/:id", Admin.getOneWalletAddress);
 module.exports = router;
