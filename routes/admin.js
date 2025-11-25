@@ -33,7 +33,7 @@ router.get("/totalblockedandactiveusers", Admin.totalBlockedAndActiveUsers);
 router.get("/totalactivesubscribers", Admin.totalActiveSubscribers);
 router.get("/getadmins", Admin.getAdmins);
 router.post("/createWalletAddress", SuperAdminAuth, Admin.CreateWallet);
-router.get("/getallWalletAddress", SuperAdminAuth, Admin.getAllWalletAddress);
+router.get("/getallWalletAddress", Admin.getAllWalletAddress);
 router.delete(
   "/deleteWalletAddress/:id",
   SuperAdminAuth,
