@@ -4,7 +4,10 @@ const User = require("../models/User");
 const DailyInterest = require("../models/DailyInterest");
 const AuditLog = require("../models/AuditLog");
 const { sendEmail } = require("../utilities/brevo");
-const { contributionCycleStartsEmail } = require("../middleware/emailTemplate");
+const {
+  contributionCycleStartsEmail,
+  dailyInterestAddedEmail,
+} = require("../middleware/emailTemplate");
 
 // helpers
 function addDays(date, days) {
@@ -170,6 +173,12 @@ cron.schedule("0 8 * * *", async () => {
               date: now.toLocaleString(),
             });
             await interest.save();
+
+            sendEmail({
+              email: user.email,
+              subject: "Daily Interest Added",
+              html: dailyInterestAddedEmail(user, subscription, dailyBonus),
+            });
 
             user.accountBalance = (user.accountBalance || 0) + dailyBonus;
             user.userTransactionTotal = user.userTransactionTotal || {};

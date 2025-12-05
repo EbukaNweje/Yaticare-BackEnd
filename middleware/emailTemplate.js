@@ -491,11 +491,42 @@ exports.walletInfoUpdatedEmail = (user) => {
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
       Your wallet information has been successfully Added in your account settings.
     </p>
-    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+    <p style="font-size: 16px; margin-bottom: 25px; color: 
+    #333;">
       If you did not make this change or believe it was made in error, please contact our support team immediately.
     </p>
     <p style="font-size: 16px; margin-top: 20px; color: #333;">Thanks for keeping your account secure and up to date.</p>
     <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
   `;
   return baseEmailTemplate("Wallet Info Added", mainContent);
+};
+
+exports.dailyInterestAddedEmail = (user, subscription, amount) => {
+  return `
+    <div style="font-family: Arial, sans-serif; padding: 20px;">
+      <h2 style="color: #0A3D2E;">💰 Daily Interest Added</h2>
+
+      <p>Hi <strong>${user.userName}</strong>,</p>
+
+      <p>Your daily interest has just been added to your wallet.</p>
+
+      <p>
+        <strong>Plan:</strong> ${subscription.planName || "Your Plan"} <br/>
+        <strong>Interest Amount:</strong> $${amount.toFixed(2)} <br/>
+        <strong>Date:</strong> ${new Date().toLocaleString()}
+      </p>
+
+      <p>
+        Your updated account balance is now <strong>$${user.accountBalance.toFixed(
+          2
+        )}</strong>.
+      </p>
+
+      <p>If you have any questions, feel free to contact support.</p>
+
+      <p style="margin-top: 30px; font-weight: bold; color: #0A3D2E;">
+        YATiCare Team
+      </p>
+    </div>
+  `;
 };
