@@ -119,12 +119,12 @@ cron.schedule("0 8 * * *", async () => {
               subscription.isSubscriptionRecycle = true;
               await subscription.save();
 
-              // sendEmail({
-              //   email: user.email,
-              //   subject:
-              //     "Action required: Recycle to receive final day interest",
-              //   html: contributionCycleStartsEmail(user, subscription),
-              // });
+              sendEmail({
+                email: user.email,
+                subject:
+                  "Action required: Recycle to receive final day interest",
+                html: contributionCycleStartsEmail(user, subscription),
+              });
 
               await AuditLog.create({
                 type: "REMINDER",
@@ -174,11 +174,11 @@ cron.schedule("0 8 * * *", async () => {
             });
             await interest.save();
 
-            sendEmail({
-              email: user.email,
-              subject: "Daily Interest Added",
-              html: dailyInterestAddedEmail(user, subscription, dailyBonus),
-            });
+            // sendEmail({
+            //   email: user.email,
+            //   subject: "Daily Interest Added",
+            //   html: dailyInterestAddedEmail(user, subscription, dailyBonus),
+            // });
 
             user.accountBalance = (user.accountBalance || 0) + dailyBonus;
             user.userTransactionTotal = user.userTransactionTotal || {};
