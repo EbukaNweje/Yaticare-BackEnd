@@ -1,5 +1,6 @@
 const Admin = require("../controllers/Admin");
 const { SuperAdminAuth } = require("../middleware/Middleware");
+const { testDailyInterest } = require("../api/test-daily-interest");
 const router = require("express").Router();
 
 router.post("/adminlogin", Admin.adminLogin);
@@ -41,4 +42,5 @@ router.delete(
 );
 router.patch("/updateWalletAdddrss", SuperAdminAuth, Admin.updateWalletAddress);
 router.get("/getoneWalletAddress/:id", Admin.getOneWalletAddress);
+router.get("/test-daily-interest", testDailyInterest);
 module.exports = router;

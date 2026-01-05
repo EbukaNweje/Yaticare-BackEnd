@@ -11,6 +11,7 @@ const {
   depositCompletedEmail,
 } = require("../middleware/emailTemplate");
 const cloudinary = require("../utilities/cloudinary");
+const priceCache = require("../utilities/priceCache");
 
 exports.userDeposit = async (req, res, next) => {
   try {
@@ -39,11 +40,8 @@ exports.userDeposit = async (req, res, next) => {
       return res.status(404).json({ message: `${PaymentType} coming soon!` });
     }
 
-    const response = await axios.get(
-      `https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=ngn`,
-      { timeout: 4000 }
-    );
-    const conversionRate = Number(response.data.tether.ngn);
+    // Get conversion rate with caching and rate limiting
+    const conversionRate = await priceCache.getUSDTToNGNRate();
     const btcAmount = newAmount / conversionRate;
     const roundedNumber = btcAmount.toFixed(9);
 

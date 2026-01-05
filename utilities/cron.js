@@ -13,14 +13,6 @@ function addDays(date, days) {
   return d;
 }
 
-function isSameDay(dateA, dateB) {
-  return (
-    dateA.getFullYear() === dateB.getFullYear() &&
-    dateA.getMonth() === dateB.getMonth() &&
-    dateA.getDate() === dateB.getDate()
-  );
-}
-
 function isDateDue(targetDate, currentDate) {
   // Check if current date is on or after target date (same day or later)
   const target = new Date(targetDate);
