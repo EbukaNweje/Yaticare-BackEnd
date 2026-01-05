@@ -50,12 +50,18 @@ exports.createSubscription = async (req, res) => {
       });
     }
 
-    const parsedSubscriptionDate = subscriptionDate
-      ? new Date(subscriptionDate)
-      : new Date();
-    const startDate = isNaN(parsedSubscriptionDate.getTime())
-      ? new Date()
-      : parsedSubscriptionDate;
+    // Always start subscriptions immediately, ignore any future dates from frontend
+    const startDate = new Date();
+
+    // Log if a future date was attempted
+    if (subscriptionDate) {
+      const parsedSubscriptionDate = new Date(subscriptionDate);
+      if (parsedSubscriptionDate > startDate) {
+        console.log(
+          `Warning: Future subscription date ${subscriptionDate} ignored, using current date instead`
+        );
+      }
+    }
     const endDate = addDays(startDate, durationInDays);
 
     // Deduct subscription amount
