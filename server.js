@@ -5,16 +5,23 @@ const Db = process.env.DATABASE;
 require("./utilities/cron"); // cron jobs
 
 mongoose
-  .connect(Db, {
-    // useNewUrlParser: true,
-    // useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 30000,
-  })
+  .connect(Db, {})
   .then(() => {
     console.log("Database connected successfully");
   })
   .catch((err) => {
-    console.log(err);
+    console.log("Database connection error:", err.message);
+    console.log("Retrying connection in 5 seconds...");
+    setTimeout(() => {
+      mongoose
+        .connect(Db, {})
+        .then(() => {
+          console.log("Database connected successfully on retry");
+        })
+        .catch((retryErr) => {
+          console.log("Database connection failed on retry:", retryErr.message);
+        });
+    }, 5000);
   });
 
 const app = require("./App");
