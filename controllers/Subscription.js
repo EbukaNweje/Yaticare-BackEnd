@@ -159,7 +159,7 @@ exports.createSubscription = async (req, res) => {
 
 exports.recycleSubscription = async (req, res) => {
   try {
-    const { subscriptionId } = req.body;
+    const { subscriptionId } = req.params;
     if (!subscriptionId)
       return res.status(400).json({ message: "subscriptionId required" });
 

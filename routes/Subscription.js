@@ -3,7 +3,10 @@ const router = require("express").Router();
 
 router.post("/userSubcription", subscriptions.createSubscription);
 router.get("/getusrSubcription/:userId", subscriptions.getUserSubscriptions);
-router.patch("/recycleSubscription", subscriptions.recycleSubscription);
+router.patch(
+  "/recycleSubscription/:recycleSubscription",
+  subscriptions.recycleSubscription
+);
 // router.get("/subscription/:userId", subscriptions.getOneSubscription);
 router.get("/allsubscriptiondata", subscriptions.getAllSubscriptions);
 
