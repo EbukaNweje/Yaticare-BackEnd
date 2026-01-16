@@ -222,7 +222,7 @@ exports.recycleSubscription = async (req, res) => {
     subscription.status = "active";
     subscription.mustRecycle = false;
     subscription.isPaused = false;
-    subscription.isSubscriptionRecycle = true;
+    subscription.isSubscriptionRecycle = false;
 
     await subscription.save();
 
