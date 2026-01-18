@@ -244,7 +244,7 @@ exports.recycleSubscription = async (req, res) => {
     user.accountBalance -= subscription.amount;
 
     /** --------------------------------
-     *  Transaction history (debit)
+     *   history (debit)
      --------------------------------- */
     const history = new historyModel({
       userId: user._id,
