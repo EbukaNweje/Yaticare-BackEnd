@@ -68,7 +68,7 @@ exports.createSubscription = async (req, res) => {
 
     if (amount < selectedPlan.minimumDeposit) {
       return res.status(400).json({
-        message: `Minimum deposit for ${plan} plan is $${selectedPlan.minimumDeposit}`,
+        message: `Minimum deposit for ${planName} plan is $${selectedPlan.minimumDeposit}`,
       });
     }
 
