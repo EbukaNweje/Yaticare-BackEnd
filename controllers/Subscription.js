@@ -13,6 +13,7 @@ const {
 } = require("../middleware/emailTemplate");
 const { sendEmail } = require("../utilities/brevo");
 const AuditLog = require("../models/AuditLog");
+const Plan = require("../models/plansModel");
 
 function addDays(date, days) {
   if (!(date instanceof Date) || isNaN(date.getTime())) date = new Date();
@@ -38,6 +39,12 @@ exports.createSubscription = async (req, res) => {
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
+
+    const selectedPlan = await Plan.findOne({ planName: plan });
+    if (!selectedPlan) {
+      return res.status(404).json({ message: "Plan not found" });
+    }
+
     if (user.accountBalance < amount)
       return res.status(400).json({ message: "Insufficient balance" });
     // ✅ Get user's most recent subscription
@@ -48,6 +55,19 @@ exports.createSubscription = async (req, res) => {
     if (amount > MAX_SUBSCRIPTION_AMOUNT) {
       return res.status(400).json({
         message: `Maximum subscription amount is $${MAX_SUBSCRIPTION_AMOUNT}`,
+      });
+    }
+
+    // Plan-specific max limit
+    if (amount > selectedPlan.maximumDeposit) {
+      return res.status(400).json({
+        message: `Amount exceeds the maximum allowed for ${plan}. Max is ₦${selectedPlan.maximumDeposit}`,
+      });
+    }
+
+    if (amount < selectedPlan.minimumDeposit) {
+      return res.status(400).json({
+        message: `Minimum deposit for ${plan} plan is ₦${selectedPlan.minimumDeposit}`,
       });
     }
 
