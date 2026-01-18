@@ -40,13 +40,24 @@ exports.createSubscription = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
     if (user.accountBalance < amount)
       return res.status(400).json({ message: "Insufficient balance" });
-    // ✅ Check last subscription amount
-    const lastuserSub = await Subscription.findOne({ user: userId }).sort({
-      createdAt: -1,
-    });
-    if (lastuserSub && amount < lastuserSub.amount) {
+    // ✅ Get user's most recent subscription
+
+    // ❌ Max subscription limit
+    const MAX_SUBSCRIPTION_AMOUNT = 10000;
+
+    if (amount > MAX_SUBSCRIPTION_AMOUNT) {
       return res.status(400).json({
-        message: `You cannot subscribe with an amount less than your last subscription of $${lastuserSub.amount}`,
+        message: `Maximum subscription amount is ₦${MAX_SUBSCRIPTION_AMOUNT}`,
+      });
+    }
+
+    const lastSubscription = await Subscription.findOne({ user: userId })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    if (lastSubscription && amount < lastSubscription.amount) {
+      return res.status(400).json({
+        message: `You cannot create a new plan with an amount less than your previous plan of ₦${lastSubscription.amount}`,
       });
     }
 
