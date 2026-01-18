@@ -33,14 +33,15 @@ function isSameDay(dateA, dateB) {
 
 exports.createSubscription = async (req, res) => {
   try {
-    const { userId, plan, amount, durationInDays, subscriptionDate } = req.body;
-    if (!userId || !plan || !amount || !durationInDays)
+    const { userId, plan, amount, durationInDays, subscriptionDate, planName } =
+      req.body;
+    if (!userId || !plan || !planName || !amount || !durationInDays)
       return res.status(400).json({ message: "Missing required fields" });
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const selectedPlan = await Plan.findOne({ planName: plan });
+    const selectedPlan = await Plan.findOne({ planName: planName });
     if (!selectedPlan) {
       return res.status(404).json({ message: "Plan not found" });
     }
