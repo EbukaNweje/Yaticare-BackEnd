@@ -62,7 +62,7 @@ exports.createSubscription = async (req, res) => {
     // Plan-specific max limit
     if (amount > selectedPlan.maximumDeposit) {
       return res.status(400).json({
-        message: `Amount exceeds the maximum allowed for ${planName}. Max is ₦${selectedPlan.maximumDeposit}`,
+        message: `Amount exceeds the maximum allowed for ${planName}. Max is $${selectedPlan.maximumDeposit}`,
       });
     }
 
