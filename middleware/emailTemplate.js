@@ -320,7 +320,7 @@ exports.referralCommissionEmail = (userData, commissionAmount) => {
     },</p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
       Great news! You've just earned a referral commission of <strong>$${commissionAmount.toFixed(
-        2
+        2,
       )}</strong> for inviting a new member to YATiCare.
     </p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
@@ -340,10 +340,10 @@ exports.subscriptionCreatedEmail = (userData, subscription) => {
     },</p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
       Your subscription of <strong>$${subscription.amount.toFixed(
-        2
+        2,
       )}</strong> has been successfully activated on <strong>${new Date(
-    subscription.startDate
-  ).toLocaleDateString()}</strong>.
+        subscription.startDate,
+      ).toLocaleDateString()}</strong>.
     </p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
       You’ll begin earning daily interest and can track your progress in your dashboard.
@@ -365,12 +365,12 @@ exports.subscriptionRecycledEmail = (userData, subscription) => {
     },</p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
       Your subscription of <strong>$${subscription.amount.toFixed(
-        2
+        2,
       )}</strong> has been successfully recycled. Your new cycle begins on <strong>${new Date(
-    subscription.startDate
-  ).toLocaleDateString()}</strong> and ends on <strong>${new Date(
-    subscription.endDate
-  ).toLocaleDateString()}</strong>.
+        subscription.startDate,
+      ).toLocaleDateString()}</strong> and ends on <strong>${new Date(
+        subscription.endDate,
+      ).toLocaleDateString()}</strong>.
     </p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
       You’ll continue earning daily interest and enjoying all your benefits without interruption.
@@ -382,6 +382,57 @@ exports.subscriptionRecycledEmail = (userData, subscription) => {
     <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
   `;
   return baseEmailTemplate("Subscription Recycled Successfully", mainContent);
+};
+
+exports.planUpgradedEmail = (
+  userData,
+  oldAmount,
+  newAmount,
+  upgradeDifference,
+  planName,
+) => {
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">🚀 Plan Upgraded Successfully</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      Congratulations! Your plan has been successfully upgraded to a higher investment level.
+    </p>
+    <table cellpadding="0" cellspacing="0" border="0" style="width: 100%; background-color: #f9f9f9; border-radius: 6px; margin: 20px 0; border: 1px solid #eee;">
+      <tr>
+        <td style="padding: 15px 20px; border-bottom: 1px solid #eee; font-size: 14px; color: #666;">Previous Amount</td>
+        <td style="padding: 15px 20px; border-bottom: 1px solid #eee; font-size: 16px; font-weight: 600; color: #333;"><strong>$${oldAmount.toFixed(2)}</strong></td>
+      </tr>
+      <tr>
+        <td style="padding: 15px 20px; border-bottom: 1px solid #eee; font-size: 14px; color: #666;">New Amount</td>
+        <td style="padding: 15px 20px; border-bottom: 1px solid #eee; font-size: 16px; font-weight: 600; color: #333;"><strong>$${newAmount.toFixed(2)}</strong></td>
+      </tr>
+      <tr>
+        <td style="padding: 15px 20px; font-size: 14px; color: #666;">Upgrade Charge</td>
+        <td style="padding: 15px 20px; font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE};"><strong>$${upgradeDifference.toFixed(2)}</strong></td>
+      </tr>
+    </table>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">
+      Your plan has been updated to <strong>${planName}</strong>. With this upgrade, you'll enjoy:
+    </p>
+    <ul style="font-size: 16px; margin-bottom: 25px; color: #333; padding-left: 20px;">
+      <li>Higher daily interest earnings</li>
+      <li>Enhanced earning potential</li>
+      <li>Access to premium features</li>
+    </ul>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      Your updated investment will begin earning at the new rate immediately. Check your dashboard to monitor your progress.
+    </p>
+    <p style="font-size: 14px; color: #999;">
+      If you didn't authorize this upgrade or have any questions, please contact our support team immediately.
+    </p>
+    <p style="font-size: 16px; margin-top: 20px; color: #333;">Thank you for growing with YATiCare!</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
+  `;
+  return baseEmailTemplate(
+    "Plan Upgraded Successfully",
+    mainContent,
+    PRIMARY_BLUE,
+  );
 };
 
 exports.adminPasswordUpdateEmail = (userData) => {
@@ -434,7 +485,7 @@ exports.firstTimeReferralBonusEmail = (userData, bonusAmount) => {
     },</p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
       Congratulations! You've earned a <strong>$${bonusAmount.toFixed(
-        2
+        2,
       )}</strong> bonus for referring a new member to YATiCare.
     </p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
@@ -453,7 +504,7 @@ exports.recurringReferralBonusEmail = (referrer, bonusAmount) => {
     },</p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
       Great news! One of your invited users just renewed their subscription, and you've earned a recurring referral bonus of <strong>$${bonusAmount.toFixed(
-        2
+        2,
       )}</strong>.
     </p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
@@ -518,7 +569,7 @@ exports.dailyInterestAddedEmail = (user, subscription, amount) => {
 
       <p>
         Your updated account balance is now <strong>$${user.accountBalance.toFixed(
-          2
+          2,
         )}</strong>.
       </p>
 

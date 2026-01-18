@@ -10,6 +10,7 @@ const {
   subscriptionRecycledEmail,
   recurringReferralBonusEmail,
   firstTimeReferralBonusEmail,
+  planUpgradedEmail,
 } = require("../middleware/emailTemplate");
 const { sendEmail } = require("../utilities/brevo");
 const AuditLog = require("../models/AuditLog");
@@ -90,7 +91,7 @@ exports.createSubscription = async (req, res) => {
       const parsedSubscriptionDate = new Date(subscriptionDate);
       if (parsedSubscriptionDate > startDate) {
         console.log(
-          `Warning: Future subscription date ${subscriptionDate} ignored, using current date instead`
+          `Warning: Future subscription date ${subscriptionDate} ignored, using current date instead`,
         );
       }
     }
@@ -347,7 +348,7 @@ exports.getUserSubscriptions = async (req, res) => {
     // Fetch subscriptions and populate plan details if needed
     // console.log("Fetching subscriptions for user:", userId);
     const subscriptions = await Subscription.find({ user: userId }).populate(
-      "plan"
+      "plan",
     );
     // console.log("Subscriptions fetched:", subscriptions);
 
@@ -378,5 +379,130 @@ exports.getAllSubscriptions = async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ message: err });
+  }
+};
+
+exports.upgradePlan = async (req, res) => {
+  try {
+    const { subscriptionId, newPlanId, newAmount } = req.body;
+
+    // Validate required fields
+    if (!subscriptionId || !newPlanId || !newAmount) {
+      return res.status(400).json({
+        message:
+          "Missing required fields: subscriptionId, newPlanId, newAmount",
+      });
+    }
+
+    // Find current subscription
+    const currentSubscription =
+      await Subscription.findById(subscriptionId).populate("plan");
+    if (!currentSubscription) {
+      return res.status(404).json({ message: "Subscription not found" });
+    }
+
+    // Find user
+    const user = await User.findById(currentSubscription.user);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Find new plan
+    const newPlan = await Plan.findById(newPlanId);
+    if (!newPlan) {
+      return res.status(404).json({ message: "New plan not found" });
+    }
+
+    // Validate new amount is greater than current amount
+    if (newAmount <= currentSubscription.amount) {
+      return res.status(400).json({
+        message: `Upgrade amount ($${newAmount}) must be greater than current subscription amount ($${currentSubscription.amount})`,
+      });
+    }
+
+    // Validate new amount against plan limits
+    if (newAmount > newPlan.maximumDeposit) {
+      return res.status(400).json({
+        message: `Amount exceeds the maximum allowed for ${newPlan.planName}. Max is $${newPlan.maximumDeposit}`,
+      });
+    }
+
+    if (newAmount < newPlan.minimumDeposit) {
+      return res.status(400).json({
+        message: `Amount is below the minimum required for ${newPlan.planName}. Min is $${newPlan.minimumDeposit}`,
+      });
+    }
+
+    // Calculate the difference (additional amount needed)
+    const upgradeDifference = newAmount - currentSubscription.amount;
+
+    // Check if user has sufficient balance for the upgrade
+    if (user.accountBalance < upgradeDifference) {
+      return res.status(400).json({
+        message: `Insufficient balance to upgrade. You need $${upgradeDifference} but only have $${user.accountBalance}`,
+      });
+    }
+
+    // Deduct the upgrade difference from user's balance
+    user.accountBalance -= upgradeDifference;
+
+    // Update subscription with new plan details
+    const oldAmount = currentSubscription.amount;
+    currentSubscription.plan = newPlanId;
+    currentSubscription.amount = newAmount;
+    currentSubscription.status = "active";
+
+    // Reset subscription timeline if upgrading to a different duration plan
+    if (
+      newPlan.durationDays &&
+      newPlan.durationDays !== currentSubscription.durationInDays
+    ) {
+      const now = new Date();
+      currentSubscription.startDate = now;
+      currentSubscription.endDate = addDays(now, newPlan.durationDays);
+      currentSubscription.durationInDays = newPlan.durationDays;
+      currentSubscription.daysPaid = 0;
+      currentSubscription.lastBonusAt = null;
+      currentSubscription.mustRecycle = false;
+      currentSubscription.isPaused = false;
+      currentSubscription.isSubscriptionRecycle = true;
+    }
+
+    // Save updated subscription
+    await currentSubscription.save();
+    await user.save();
+
+    // Log upgrade in audit log
+    await AuditLog.create({
+      type: "UPGRADE_PLAN",
+      user: user._id,
+      subscription: currentSubscription._id,
+      message: `Plan upgraded from $${oldAmount} to $${newAmount} on plan ${newPlan.planName}. Difference charged: $${upgradeDifference}`,
+    });
+
+    // Send upgrade confirmation email
+    sendEmail({
+      email: user.email,
+      subject: "Plan Upgraded Successfully",
+      html: planUpgradedEmail(
+        user,
+        oldAmount,
+        newAmount,
+        upgradeDifference,
+        newPlan.planName,
+      ),
+    });
+
+    res.status(200).json({
+      message: "Plan upgraded successfully",
+      subscription: currentSubscription,
+      upgradedAmount: upgradeDifference,
+      newBalance: user.accountBalance,
+      oldAmount,
+      newAmount,
+    });
+  } catch (err) {
+    console.error("Error upgrading plan:", err);
+    res.status(500).json({ message: err.message });
   }
 };
