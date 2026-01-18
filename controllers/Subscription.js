@@ -47,7 +47,7 @@ exports.createSubscription = async (req, res) => {
 
     if (amount > MAX_SUBSCRIPTION_AMOUNT) {
       return res.status(400).json({
-        message: `Maximum subscription amount is ₦${MAX_SUBSCRIPTION_AMOUNT}`,
+        message: `Maximum subscription amount is $${MAX_SUBSCRIPTION_AMOUNT}`,
       });
     }
 
@@ -57,7 +57,7 @@ exports.createSubscription = async (req, res) => {
 
     if (lastSubscription && amount < lastSubscription.amount) {
       return res.status(400).json({
-        message: `You cannot create a new plan with an amount less than your previous plan of ₦${lastSubscription.amount}`,
+        message: `You cannot create a new plan with an amount less than your previous plan of $${lastSubscription.amount}`,
       });
     }
 
