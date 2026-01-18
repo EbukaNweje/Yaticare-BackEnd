@@ -2,6 +2,7 @@ const User = require("../models/User");
 const Subscription = require("../models/Subscription");
 const Bonus = require("../models/Bonus");
 const DailyInterest = require("../models/DailyInterest");
+const historyModel = require("../models/History");
 const mongoose = require("mongoose");
 const {
   subscriptionCreatedEmail,
@@ -245,17 +246,12 @@ exports.recycleSubscription = async (req, res) => {
     /** --------------------------------
      *  Transaction history (debit)
      --------------------------------- */
-    const transaction = new Transaction({
-      user: user._id,
+    const history = new historyModel({
+      userId: user._id,
+      transactionType: "Subscription recycled",
       amount: subscription.amount,
-      type: "debit",
-      reason: "Subscription recycled",
-      date: now,
     });
-    await transaction.save();
-
-    user.userTransaction.history = user.userTransaction.history || [];
-    user.userTransaction.history.push(transaction._id);
+    await history.save();
 
     user.userTransactionTotal.totalSpent =
       (user.userTransactionTotal.totalSpent || 0) + subscription.amount;
