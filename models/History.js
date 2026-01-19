@@ -10,28 +10,31 @@ const createdOn = DateTime.now().toLocaleString({
   minute: "2-digit",
 });
 
-const historySchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "users",
+const historySchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "users",
+    },
+    transactionType: {
+      type: String,
+    },
+    amount: {
+      type: String,
+    },
+    to: {
+      type: String,
+    },
+    //   desc: {
+    //     type: String,
+    //   },
+    date: {
+      type: String,
+      default: createdOn,
+    },
   },
-  transactionType: {
-    type: String,
-  },
-  amount: {
-    type: String,
-  },
-  to: {
-    type: String,
-  },
-  //   desc: {
-  //     type: String,
-  //   },
-  date: {
-    type: String,
-    default: createdOn,
-  },
-});
+  { timestamps: true },
+);
 
 const historyModel = mongoose.model("history", historySchema);
 

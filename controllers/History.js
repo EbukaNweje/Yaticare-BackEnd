@@ -4,22 +4,18 @@ const depositModel = require("../models/Deposit");
 const user = require("../models/User");
 // const investModel = require("../models/investModel");
 
-exports.getAllHistory = async (req, res) => {
+exports.getoneUserHistory = async (req, res) => {
   try {
-    // get the user's id
     const { userId } = req.params;
 
-    // find the history by the user's id
-    const history = await historyModel.find({ user: userId }).sort({
-      createdAt: -1,
-    });
-    if (!history) {
+    const history = await historyModel.find({ userId }).sort({ _id: -1 }); // ObjectId gives correct order
+
+    if (!history || history.length === 0) {
       return res.status(404).json({
-        message: "you don't have any history yet",
+        message: "You don't have any history yet",
       });
     }
 
-    // return the history
     res.status(200).json({
       data: history,
     });

@@ -1,7 +1,7 @@
 const router = require("express").Router();
-const { getAllHistory, depositHistory } = require("../controllers/History");
+const { getoneUserHistory, depositHistory } = require("../controllers/History");
 
-router.get("/getallhistory/:id", getAllHistory);
+router.get("/getallhistory/:id", getoneUserHistory);
 router.get("/deposithistory/:id", depositHistory);
 
 module.exports = router;
