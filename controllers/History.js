@@ -6,8 +6,8 @@ const user = require("../models/User");
 
 exports.getAllHistory = async (req, res) => {
   try {
-    // get the user,s id
-    const userId = req.body;
+    // get the user's id
+    const { userId } = req.params;
 
     // find the history by the user's id
     const history = await historyModel.findOne(userId);
