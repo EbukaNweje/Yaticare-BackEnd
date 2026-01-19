@@ -10,7 +10,9 @@ exports.getAllHistory = async (req, res) => {
     const { userId } = req.params;
 
     // find the history by the user's id
-    const history = await historyModel.findOne(userId);
+    const history = await historyModel.find({ user: userId }).sort({
+      createdAt: -1,
+    });
     if (!history) {
       return res.status(404).json({
         message: "you don't have any history yet",
