@@ -77,6 +77,7 @@ exports.userDeposit = async (req, res, next) => {
     const history = new historyModel({
       userId: user._id,
       transactionType: deposit.transactionType,
+      desc: `Deposited $${newAmount} via ${PaymentType}`,
       amount: roundedNumber,
     });
     await history.save();

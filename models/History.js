@@ -25,9 +25,9 @@ const historySchema = new mongoose.Schema(
     to: {
       type: String,
     },
-    //   desc: {
-    //     type: String,
-    //   },
+    desc: {
+      type: String,
+    },
     date: {
       type: String,
       default: createdOn,

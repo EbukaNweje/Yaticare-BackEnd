@@ -7,6 +7,7 @@ require("./utilities/cron"); // cron jobs
 mongoose
   .connect(Db, {})
   .then(() => {
+    /////
     console.log("Database connected successfully");
   })
   .catch((err) => {

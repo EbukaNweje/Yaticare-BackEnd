@@ -248,7 +248,8 @@ exports.recycleSubscription = async (req, res) => {
      --------------------------------- */
     const history = new historyModel({
       userId: user._id,
-      transactionType: "Subscription recycled",
+      transactionType: "recycl",
+      desc: `Recycled subscription for $${subscription.amount}`,
       amount: subscription.amount,
     });
     await history.save();

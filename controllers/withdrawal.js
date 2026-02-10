@@ -88,6 +88,7 @@ const createWithdrawal = async (req, res) => {
       transactionType: "withdrawal",
       amount,
       to: walletAddress || accountName || method,
+      desc: `Withdrew $${amountAfterFee} via ${method} (Fee: $${fee})`,
     });
 
     await history.save();
@@ -117,7 +118,7 @@ const getAllWithdrawals = async (req, res) => {
   try {
     const withdrawals = await Withdrawal.find().populate(
       "user",
-      "userName email"
+      "userName email",
     );
     res.json(withdrawals);
   } catch (err) {
