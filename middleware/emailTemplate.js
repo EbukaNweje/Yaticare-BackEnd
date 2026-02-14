@@ -581,3 +581,83 @@ exports.dailyInterestAddedEmail = (user, subscription, amount) => {
     </div>
   `;
 };
+
+// Contact Us Confirmation Email - To User
+exports.contactUsConfirmationEmail = (contactData) => {
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">We Received Your Message</h1>
+    
+    <p style="font-size: 16px; color: #333; margin-bottom: 20px;">
+      Dear <strong>${contactData.fullName}</strong>,
+    </p>
+
+    <p style="font-size: 14px; color: #555; line-height: 1.8;">
+      Thank you for contacting YATiCare! We have successfully received your message and appreciate you taking the time to reach out to us.
+    </p>
+
+    <div style="background-color: #f9f9f9; border-left: 4px solid ${PRIMARY_BLUE}; padding: 20px; margin: 20px 0; border-radius: 4px;">
+      <h3 style="color: #002611; margin-top: 0;">Message Summary:</h3>
+      <p style="margin: 8px 0;"><strong>Email:</strong> ${contactData.email}</p>
+      <p style="margin: 8px 0; word-break: break-word;"><strong>Message:</strong></p>
+      <p style="margin: 8px 0; color: #666; font-style: italic;">${contactData.message}</p>
+    </div>
+
+    <p style="font-size: 14px; color: #555; line-height: 1.8;">
+      Our support team will review your inquiry and get back to you within <strong>24-48 hours</strong>. We're committed to providing you with the best assistance possible.
+    </p>
+
+    <p style="font-size: 14px; color: #555; line-height: 1.8; margin-top: 20px;">
+      If you need immediate assistance, please don't hesitate to contact us through our chat support feature on the platform.
+    </p>
+
+    <p style="margin-top: 30px; font-weight: bold; color: #0A3D2E;">
+      Best regards,<br>
+      YATiCare Team
+    </p>
+  `;
+
+  return baseEmailTemplate("Contact Us Confirmation", mainContent);
+};
+
+// Contact Us Notification Email - To Admin
+exports.contactUsAdminNotification = (contactData) => {
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">New Contact Us Message</h1>
+    
+    <p style="font-size: 16px; color: #333; margin-bottom: 20px;">
+      You have received a new contact message from a user.
+    </p>
+
+    <div style="background-color: #fff3cd; border-left: 4px solid ${WARNING_ORANGE}; padding: 20px; margin: 20px 0; border-radius: 4px;">
+      <h3 style="color: #856404; margin-top: 0;">Sender Information:</h3>
+      <p style="margin: 8px 0;"><strong>Name:</strong> ${contactData.fullName}</p>
+      <p style="margin: 8px 0;"><strong>Email:</strong> <a href="mailto:${contactData.email}" style="color: ${PRIMARY_BLUE};">${contactData.email}</a></p>
+    </div>
+
+    <div style="background-color: #f0f0f0; border-left: 4px solid ${PRIMARY_BLUE}; padding: 20px; margin: 20px 0; border-radius: 4px;">
+      <h3 style="color: #002611; margin-top: 0;">Message:</h3>
+      <div style="background-color: #ffffff; padding: 15px; border-radius: 4px; margin-top: 12px; border: 1px solid #ddd;">
+        <p style="margin: 10px 0; color: #333; white-space: pre-wrap; word-break: break-word;">${contactData.message}</p>
+      </div>
+    </div>
+
+    <div style="margin: 20px 0; padding: 15px; background-color: #e8f5e9; border-radius: 4px;">
+      <p style="margin: 0;"><strong>Submission Date:</strong> ${new Date().toLocaleString()}</p>
+      <p style="margin: 8px 0;"><strong>Status:</strong> <span style="color: ${WARNING_ORANGE}; font-weight: bold;">PENDING</span></p>
+    </div>
+
+    <p style="font-size: 14px; color: #555; margin-top: 20px;">
+      Please review this message and respond to the user as soon as possible.
+    </p>
+
+    <p style="margin-top: 30px; font-weight: bold; color: #0A3D2E;">
+      YATiCare Admin System
+    </p>
+  `;
+
+  return baseEmailTemplate(
+    "New Contact Us Message - Action Required",
+    mainContent,
+    WARNING_ORANGE,
+  );
+};

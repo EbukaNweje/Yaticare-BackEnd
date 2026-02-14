@@ -9,6 +9,7 @@ const planRouter = require("./routes/plansRouter");
 const withdrawalRoutes = require("./routes/withdrawal");
 const subscriptions = require("./routes/Subscription");
 const admin = require("./routes/admin");
+const contactUsRoutes = require("./routes/contactUs");
 const morgan = require("morgan");
 const fileUploader = require("express-fileupload");
 const bodyParser = require("body-parser");
@@ -21,7 +22,7 @@ app.use(
     useTempFiles: true,
     tempFileDir: "/tmp/",
     createParentPath: true,
-  })
+  }),
 );
 app.use(morgan("dev"));
 app.use(cookieParser());
@@ -36,6 +37,7 @@ app.use("/api/history", userHistory);
 app.use("/api", planRouter);
 app.use("/api", subscriptions);
 app.use("/api/admin", admin);
+app.use("/api/contactus", contactUsRoutes);
 
 app.use("/", (req, res, next) => {
   res.status(200).send("Server is running");
