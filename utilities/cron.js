@@ -56,7 +56,7 @@ cron.schedule("0 8 * * *", async () => {
         const now = new Date();
         console.log(`\n--- Processing ${user.email} (${subscription._id}) ---`);
         console.log(
-          `Days paid: ${subscription.daysPaid}, Amount: ${subscription.amount}`
+          `Days paid: ${subscription.daysPaid}, Amount: ${subscription.amount}`,
         );
 
         // Expire subscription if endDate passed
@@ -79,7 +79,7 @@ cron.schedule("0 8 * * *", async () => {
           console.log(
             "⏸️  Paused (no interest):",
             subscription._id,
-            user.email
+            user.email,
           );
           continue;
         }
@@ -136,7 +136,7 @@ cron.schedule("0 8 * * *", async () => {
             });
 
             console.log(
-              `✅ Paid day ${subscription.daysPaid} interest to ${user.email}: ${dailyBonus}`
+              `✅ Paid day ${subscription.daysPaid} interest to ${user.email}: ${dailyBonus}`,
             );
             processedCount++;
 
@@ -193,7 +193,7 @@ cron.schedule("0 8 * * *", async () => {
                 message: "Paused - user failed to recycle before day7.",
               });
               console.log(
-                `⏸️  Paused subscription (missed recycle): ${subscription._id} for ${user.email}`
+                `⏸️  Paused subscription (missed recycle): ${subscription._id} for ${user.email}`,
               );
               processedCount++;
             } else {
@@ -229,7 +229,7 @@ cron.schedule("0 8 * * *", async () => {
                 message: `Paid day ${subscription.daysPaid} interest ${dailyBonus} (post-recycle).`,
               });
               console.log(
-                `✅ Paid final day interest to ${user.email}: ${dailyBonus}`
+                `✅ Paid final day interest to ${user.email}: ${dailyBonus}`,
               );
               processedCount++;
             }
@@ -238,14 +238,14 @@ cron.schedule("0 8 * * *", async () => {
       } catch (err) {
         console.log(
           `❌ Error processing subscription ${subscription._id}:`,
-          err.message
+          err.message,
         );
         errorCount++;
       }
     }
 
     console.log(
-      `\n📊 Summary: Processed ${processedCount} subscriptions, ${errorCount} errors`
+      `\n📊 Summary: Processed ${processedCount} subscriptions, ${errorCount} errors`,
     );
   } catch (err) {
     console.log("❌ Cron job fatal error:", err.message);
