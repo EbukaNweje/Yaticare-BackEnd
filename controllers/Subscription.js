@@ -210,15 +210,15 @@ exports.recycleSubscription = async (req, res) => {
      *  Recycle eligibility
      --------------------------------- */
     const secondToLastDay = addDays(subscription.endDate, -1);
-    const canRecycle =
-      isSameDay(secondToLastDay, now) || now >= subscription.endDate;
+    // const canRecycle =
+    //   isSameDay(secondToLastDay, now) || now >= subscription.endDate;
 
-    if (!canRecycle) {
-      return res.status(400).json({
-        message:
-          "You can only recycle on the second-to-last day or after expiration",
-      });
-    }
+    // if (!canRecycle) {
+    //   return res.status(400).json({
+    //     message:
+    //       "You can only recycle on the second-to-last day or after expiration",
+    //   });
+    // }
 
     /** --------------------------------
      *  Prevent double recycle
