@@ -209,7 +209,7 @@ exports.recycleSubscription = async (req, res) => {
     /** --------------------------------
      *  Recycle eligibility
      --------------------------------- */
-    // const secondToLastDay = addDays(subscription.endDate, -1);
+    const secondToLastDay = addDays(subscription.endDate, -1);
     // const canRecycle =
     //   isSameDay(secondToLastDay, now) || now >= subscription.endDate;
 
@@ -225,7 +225,7 @@ exports.recycleSubscription = async (req, res) => {
      --------------------------------- */
     if (!subscription.isSubscriptionRecycle) {
       return res.status(400).json({
-        message: "This subscription has already been Recapitalize",
+        message: "This subscription has already been recycled",
       });
     }
 
@@ -277,12 +277,12 @@ exports.recycleSubscription = async (req, res) => {
             type: "INTEREST",
             user: userForInterest._id,
             subscription: subscription._id,
-            message: `Paid pending daily interest ${dailyBonus} (pre-Recapitalize). daysPaid=${subscription.daysPaid}`,
+            message: `Paid pending daily interest ${dailyBonus} (pre-recycle). daysPaid=${subscription.daysPaid}`,
           });
         }
       }
     } catch (e) {
-      console.error("Error paying pending interest during Recapitalize:", e);
+      console.error("Error paying pending interest during recycle:", e);
       // continue with recycle even if interest payment fails
     }
 
@@ -291,9 +291,13 @@ exports.recycleSubscription = async (req, res) => {
      --------------------------------- */
     if (user.accountBalance < subscription.amount) {
       return res.status(400).json({
-        message: "Insufficient balance to Recapitalize subscription",
+        message: "Insufficient balance to recycle subscription",
       });
     }
+
+    //Add the 7th day bonus before deducting for recycle;
+    interest.amount = 0.2 * subscription.amount;
+    await interest.save();
 
     /** --------------------------------
      *  Deduct subscription amount
@@ -306,7 +310,7 @@ exports.recycleSubscription = async (req, res) => {
     const history = new historyModel({
       userId: user._id,
       transactionType: "recycl",
-      desc: `Recapitalized subscription for $${subscription.amount}`,
+      desc: `Recycled subscription for $${subscription.amount}`,
       amount: subscription.amount,
     });
     await history.save();
@@ -355,7 +359,7 @@ exports.recycleSubscription = async (req, res) => {
       const bonus = new Bonus({
         user: referrer._id,
         amount: commission,
-        reason: "Recapitalize Bonus",
+        reason: "Recycle Bonus",
         date: now.toLocaleString(),
       });
       await bonus.save();
@@ -375,12 +379,12 @@ exports.recycleSubscription = async (req, res) => {
      --------------------------------- */
     sendEmail({
       email: user.email,
-      subject: "Subscription Recapitalized & Restarted",
+      subject: "Subscription Recycled & Restarted",
       html: subscriptionRecycledEmail(user, subscription),
     });
 
     return res.status(200).json({
-      message: "Subscription Recapitalize and restarted successfully",
+      message: "Subscription recycled and restarted successfully",
       subscription,
       balance: user.accountBalance,
     });

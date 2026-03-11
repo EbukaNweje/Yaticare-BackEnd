@@ -7,7 +7,6 @@ const {
 } = require("../middleware/emailTemplate");
 
 const ADMIN_EMAIL = process.env.Admin_Contact_Email;
-
 /**
  * Create a new contact us message
  * @route POST /api/contactus

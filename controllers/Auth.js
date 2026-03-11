@@ -177,7 +177,7 @@ exports.forgetPassword = async (req, res, next) => {
       return next(createError(400, "User not found"));
     }
 
-    const resetLink = "https://www.yaticare.com/auth/Resetpassword";
+    const resetLink = `https://www.yaticare.com/auth/Resetpassword/${user._id}`;
 
     const emailDetails = {
       email: user.email,
