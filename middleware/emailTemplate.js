@@ -359,14 +359,14 @@ exports.subscriptionCreatedEmail = (userData, subscription) => {
 
 exports.subscriptionRecycledEmail = (userData, subscription) => {
   const mainContent = `
-    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Subscription Recycled Successfully</h1>
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Subscription Recapitalize Successfully</h1>
     <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${
       userData.userName
     },</p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
       Your subscription of <strong>$${subscription.amount.toFixed(
         2,
-      )}</strong> has been successfully recycled. Your new cycle begins on <strong>${new Date(
+      )}</strong> has been successfully Recapitalize. Your new cycle begins on <strong>${new Date(
         subscription.startDate,
       ).toLocaleDateString()}</strong> and ends on <strong>${new Date(
         subscription.endDate,
@@ -381,7 +381,10 @@ exports.subscriptionRecycledEmail = (userData, subscription) => {
     <p style="font-size: 16px; margin-top: 20px; color: #333;">Thank you for staying with us!</p>
     <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
   `;
-  return baseEmailTemplate("Subscription Recycled Successfully", mainContent);
+  return baseEmailTemplate(
+    "Subscription Recapitalize Successfully",
+    mainContent,
+  );
 };
 
 exports.planUpgradedEmail = (
