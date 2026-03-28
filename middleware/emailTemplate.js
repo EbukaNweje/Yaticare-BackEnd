@@ -667,7 +667,7 @@ exports.contactUsAdminNotification = (contactData) => {
 
 exports.adminCustomMessageEmail = (userData, customMessage) => {
   const mainContent = `
-    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">📧 Message from Yaticare Admin</h1>
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Message from Yaticare Admin</h1>
     <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName || userData.email},</p>
     
     <div style="margin: 25px 0; padding: 20px; background-color: #f5f5f5; border-left: 4px solid ${PRIMARY_BLUE}; border-radius: 4px;">
