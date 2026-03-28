@@ -664,3 +664,29 @@ exports.contactUsAdminNotification = (contactData) => {
     WARNING_ORANGE,
   );
 };
+
+exports.adminCustomMessageEmail = (userData, customMessage) => {
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">📧 Message from Yaticare Admin</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName || userData.email},</p>
+    
+    <div style="margin: 25px 0; padding: 20px; background-color: #f5f5f5; border-left: 4px solid ${PRIMARY_BLUE}; border-radius: 4px;">
+      <p style="font-size: 15px; color: #333; line-height: 1.8; margin: 0; white-space: pre-wrap;">${customMessage}</p>
+    </div>
+
+    <p style="font-size: 14px; color: #666; margin-top: 25px;">
+      If you have any questions or concerns, please contact our support team.
+    </p>
+
+    <p style="margin-top: 30px; font-weight: bold; color: #0A3D2E;">
+      Best regards,<br>
+      YATicare Team
+    </p>
+  `;
+
+  return baseEmailTemplate(
+    "Message from Yaticare Admin",
+    mainContent,
+    PRIMARY_BLUE,
+  );
+};

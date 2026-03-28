@@ -53,7 +53,7 @@ exports.adminLogin = async (req, res, next) => {
       process.env.JWT,
       {
         expiresIn: "1d",
-      }
+      },
     );
     res.status(200).json({ message: "Login successful", token });
   } catch (error) {
@@ -256,7 +256,7 @@ exports.updateUserEmail = async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       id,
       { email },
-      { new: true } // this returns the updated document
+      { new: true }, // this returns the updated document
     );
 
     if (!updatedUser) {
@@ -281,7 +281,7 @@ exports.changeUserPassword = async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       id,
       { password: hashedPassword },
-      { new: true } // this returns the updated document
+      { new: true }, // this returns the updated document
     );
 
     if (!updatedUser) {
@@ -307,7 +307,7 @@ exports.changeUserPin = async (req, res, next) => {
     const updatedUser = await User.findByIdAndUpdate(
       id,
       { pin: hashedPin },
-      { new: true } // this returns the updated document
+      { new: true }, // this returns the updated document
     );
 
     if (!updatedUser) {
@@ -344,9 +344,9 @@ exports.blockUser = async (req, res, next) => {
     await user.save();
 
     const emailDetails = {
-      email: updatedUser.email,
+      email: user.email,
       subject: "Account Blocked",
-      html: userBlockedEmail(updatedUser),
+      html: userBlockedEmail(user),
     };
 
     sendEmail(emailDetails);
@@ -402,7 +402,7 @@ exports.totalDalyDeposit = async (req, res) => {
 
     const totalAmount = dailyDeposits.reduce(
       (sum, deposit) => sum + deposit.amount,
-      0
+      0,
     );
 
     res.status(200).json({
@@ -429,7 +429,7 @@ exports.totalDailyWithdrawals = async (req, res) => {
 
     const totalAmount = dailyWithdrawals.reduce(
       (sum, withdrawal) => sum + withdrawal.amount,
-      0
+      0,
     );
 
     res.status(200).json({
@@ -579,7 +579,7 @@ exports.updateWalletAddress = async (req, res) => {
     const newWallet = await AddWallet.findByIdAndUpdate(
       req.params.id,
       updatedwallet,
-      { new: true }
+      { new: true },
     );
     if (!newWallet) {
       return res.status(404).json({ message: "Wallet Address not found" });
@@ -604,5 +604,78 @@ exports.deleteWalletAddress = async (req, res) => {
       .json({ message: "wallet Adddress deleted successfully", data: wallet });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+exports.adminSendEmail = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const { subject, message } = req.body;
+
+    // Validate input
+    if (!subject || !message) {
+      return res
+        .status(400)
+        .json({ message: "Subject and message are required" });
+    }
+
+    // Find user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Import the custom email template
+    const { adminCustomMessageEmail } = require("../middleware/emailTemplate");
+
+    // Send email
+    const emailDetails = {
+      email: user.email,
+      subject: subject,
+      html: adminCustomMessageEmail(user, message),
+    };
+
+    await sendEmail(emailDetails);
+
+    res.status(200).json({
+      message: "Email sent successfully to user",
+      data: { userId, userEmail: user.email },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.loginAsUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId).select("-password -pin");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Mark user as logged in (keeps behavior consistent with normal user login)
+    user.isLogin = "active";
+    await user.save();
+
+    // Create a token that the frontend can use to access the user dashboard
+    const token = jwt.sign(
+      { id: user._id, email: user.email },
+      process.env.JWT,
+      {
+        expiresIn: "1d",
+      },
+    );
+
+    // Generate the same referral link as regular login
+    const referralLink = `https://www.yaticare.com/auth/Sign-up?referralCode=${user.inviteCode.code}`;
+
+    res.status(200).json({
+      message: "Login as user successful",
+      data: { user, referralLink },
+      token,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
