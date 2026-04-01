@@ -75,6 +75,11 @@ const UserSchema = new mongoose.Schema(
       },
     },
 
+    userTestimonial: {
+      type: Boolean,
+      default: false,
+    },
+
     // BankInfo: {
     //         bankName: {
     //             type: String,
@@ -158,7 +163,7 @@ const UserSchema = new mongoose.Schema(
       ],
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("User", UserSchema);
