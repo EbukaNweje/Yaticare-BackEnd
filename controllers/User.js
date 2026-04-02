@@ -1,5 +1,7 @@
 const Subscription = require("../models/Subscription");
 const User = require("../models/User");
+const Withdrawal = require("../models/withdrawal");
+const Testimonial = require("../models/Testimonials");
 const { sendEmail } = require("../utilities/brevo");
 const createError = require("../utilities/error");
 const {
@@ -55,7 +57,7 @@ exports.saveBankInfo = async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       id,
       { WalletInfo: { WalletName, WalletAddress } },
-      { new: true } // this returns the updated document
+      { new: true }, // this returns the updated document
     );
 
     if (!updatedUser) {
@@ -170,3 +172,107 @@ exports.totalReferredActiveSubscribers = async (req, res) => {
 //     res.status(500).json({ error: err.message });
 //   }
 // };
+
+exports.updateAllUserTestimonials = async (req, res, next) => {
+  try {
+    const result = await User.updateMany({}, { userTestimonial: true });
+    res.status(200).json({
+      message: "All users' testimonials updated successfully",
+      updatedCount: result.modifiedCount,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.updateTestimonialsForWithdrawers = async (req, res, next) => {
+  try {
+    // Find distinct user IDs who have made withdrawals
+    const userIdsWithWithdrawals = await Withdrawal.distinct("user");
+
+    // Update those users' userTestimonial to true
+    const result = await User.updateMany(
+      { _id: { $in: userIdsWithWithdrawals } },
+      { userTestimonial: true },
+    );
+
+    res.status(200).json({
+      message: "Testimonials updated for users who have made withdrawals",
+      updatedCount: result.modifiedCount,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getAllTestimonials = async (req, res, next) => {
+  try {
+    const testimonials = await Testimonial.find({})
+      .populate("user", "userName")
+      .sort({ date: -1 });
+
+    res.status(200).json({
+      message: "Testimonials retrieved successfully",
+      data: testimonials,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.createTestimonial = async (req, res, next) => {
+  try {
+    const { userId, testimonial } = req.body;
+
+    if (!userId || !testimonial) {
+      return res
+        .status(400)
+        .json({ message: "User ID and testimonial text are required" });
+    }
+
+    const newTestimonial = new Testimonial({
+      user: userId,
+      testimonial,
+    });
+
+    await newTestimonial.save();
+
+    // Set userTestimonial to false for the user
+    await User.findByIdAndUpdate(userId, { userTestimonial: false });
+
+    res.status(201).json({
+      message: "Testimonial created successfully",
+      data: newTestimonial,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.updateTestimonial = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { testimonial } = req.body;
+
+    if (!testimonial) {
+      return res.status(400).json({ message: "Testimonial text is required" });
+    }
+
+    const updatedTestimonial = await Testimonial.findByIdAndUpdate(
+      id,
+      { testimonial },
+      { new: true },
+    );
+
+    if (!updatedTestimonial) {
+      return res.status(404).json({ message: "Testimonial not found" });
+    }
+
+    res.status(200).json({
+      message: "Testimonial updated successfully",
+      data: updatedTestimonial,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

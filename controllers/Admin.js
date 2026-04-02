@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const depositModel = require("../models/Deposit");
 const historyModel = require("../models/History");
 const Withdrawal = require("../models/withdrawal");
+const Testimonial = require("../models/Testimonials");
 const transporter = require("../utilities/email");
 const Subscription = require("../models/Subscription");
 const {
@@ -677,5 +678,46 @@ exports.loginAsUser = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+exports.approveTestimonial = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const testimonial = await Testimonial.findByIdAndUpdate(
+      id,
+      { approved: true },
+      { new: true },
+    ).populate("user", "userName");
+
+    if (!testimonial) {
+      return res.status(404).json({ message: "Testimonial not found" });
+    }
+
+    res.status(200).json({
+      message: "Testimonial approved successfully",
+      data: testimonial,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.deleteTestimonial = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const testimonial = await Testimonial.findByIdAndDelete(id);
+
+    if (!testimonial) {
+      return res.status(404).json({ message: "Testimonial not found" });
+    }
+
+    res.status(200).json({
+      message: "Testimonial deleted successfully",
+    });
+  } catch (error) {
+    next(error);
   }
 };

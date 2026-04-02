@@ -7,7 +7,15 @@ router.put("/addWallet/:id", user.saveBankInfo);
 router.put("/changePhonenumber/:id", user.changePhoneNumber);
 router.get(
   "/totalreferredactivesubscribers/:userId",
-  user.totalReferredActiveSubscribers
+  user.totalReferredActiveSubscribers,
 );
+router.put("/updateAllTestimonials", user.updateAllUserTestimonials);
+router.put(
+  "/updateTestimonialsForWithdrawers",
+  user.updateTestimonialsForWithdrawers,
+);
+router.get("/testimonials", user.getAllTestimonials);
+router.post("/testimonials", user.createTestimonial);
+router.put("/testimonials/:id", user.updateTestimonial);
 
 module.exports = router;

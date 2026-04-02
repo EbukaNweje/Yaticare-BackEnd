@@ -43,6 +43,9 @@ router.delete(
 );
 router.patch("/updateWalletAdddrss", SuperAdminAuth, Admin.updateWalletAddress);
 router.get("/getoneWalletAddress/:id", Admin.getOneWalletAddress);
-router.post("/send-email/:userId", SuperAdminAuth, Admin.adminSendEmail);
+router.post("/send-email/:userId", Admin.adminSendEmail);
 router.get("/test-daily-interest", testDailyInterest);
+router.put("/approve-testimonial/:id", Admin.approveTestimonial);
+router.delete("/delete-testimonial/:id", Admin.deleteTestimonial);
+
 module.exports = router;

@@ -95,6 +95,9 @@ const createWithdrawal = async (req, res) => {
 
     await withdrawals.save();
 
+    // Set userTestimonial to false for the user
+    await user.findByIdAndUpdate(userId, { userTestimonial: true });
+
     const emailDetails = {
       email: user.email,
       subject: "Withdrawal Request Initiated",
