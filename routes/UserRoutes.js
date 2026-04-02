@@ -15,6 +15,7 @@ router.put(
   user.updateTestimonialsForWithdrawers,
 );
 router.get("/testimonials", user.getAllTestimonials);
+router.get("/testimonials/approved", user.getApprovedTestimonials);
 router.post("/testimonials", user.createTestimonial);
 router.put("/testimonials/:id", user.updateTestimonial);
 

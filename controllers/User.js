@@ -220,6 +220,21 @@ exports.getAllTestimonials = async (req, res, next) => {
   }
 };
 
+exports.getApprovedTestimonials = async (req, res, next) => {
+  try {
+    const testimonials = await Testimonial.find({ approved: true })
+      .populate("user", "userName")
+      .sort({ date: -1 });
+
+    res.status(200).json({
+      message: "Approved testimonials retrieved successfully",
+      data: testimonials,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 exports.createTestimonial = async (req, res, next) => {
   try {
     const { userId, testimonial } = req.body;
