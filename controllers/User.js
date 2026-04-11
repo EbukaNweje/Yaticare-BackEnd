@@ -205,21 +205,6 @@ exports.updateTestimonialsForWithdrawers = async (req, res, next) => {
   }
 };
 
-exports.getAllTestimonials = async (req, res, next) => {
-  try {
-    const testimonials = await Testimonial.find({})
-      .populate("user", "userName")
-      .sort({ date: -1 });
-
-    res.status(200).json({
-      message: "Testimonials retrieved successfully",
-      data: testimonials,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
 exports.getApprovedTestimonials = async (req, res, next) => {
   try {
     const testimonials = await Testimonial.find({ approved: true })
@@ -228,6 +213,21 @@ exports.getApprovedTestimonials = async (req, res, next) => {
 
     res.status(200).json({
       message: "Approved testimonials retrieved successfully",
+      data: testimonials,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getAllTestimonials = async (req, res, next) => {
+  try {
+    const testimonials = await Testimonial.find()
+      .populate("user", "userName")
+      .sort({ date: -1 });
+
+    res.status(200).json({
+      message: "All testimonials retrieved successfully",
       data: testimonials,
     });
   } catch (error) {
