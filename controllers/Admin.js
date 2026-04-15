@@ -13,6 +13,7 @@ const {
   withdrawalCompletedEmail,
   adminPasswordUpdateEmail,
   userBlockedEmail,
+  userUnBlockedEmail,
 } = require("../middleware/emailTemplate");
 const { sendEmail } = require("../utilities/brevo");
 const AddWallet = require("../models/AddWallet");
@@ -346,7 +347,7 @@ exports.blockUser = async (req, res, next) => {
 
     const emailDetails = {
       email: user.email,
-      subject: "Account Blocked",
+      subject: "Account suspended",
       html: userBlockedEmail(user),
     };
 
@@ -382,6 +383,14 @@ exports.unblockUser = async (req, res, next) => {
 
     user.status = "active";
     await user.save();
+
+    const emailDetails = {
+      email: user.email,
+      subject: "Account Reinstated – Final Warning",
+      html: userUnBlockedEmail(user),
+    };
+
+    sendEmail(emailDetails);
 
     res.status(200).json({ message: "User unblocked successfully" });
   } catch (error) {

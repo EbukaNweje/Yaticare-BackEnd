@@ -475,6 +475,24 @@ exports.userBlockedEmail = (userData) => {
       Empowering Connections, Elevating Financial Growth.</p>`;
   return baseEmailTemplate("Account Blocked", mainContent);
 };
+exports.userUnBlockedEmail = (userData) => {
+  const mainContent = `
+    <h1 style="font-size: 24px; color: ${ALERT_RED}; margin-bottom: 20px;">Account Suspension Notice</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Dear ${userData.userName},</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      Your YatiCare account has been reinstated following a review of your appeal.
+    </p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+     Please be aware that this decision comes with a final warning. Any future violation of our Terms of Use will result in permanent account closure without further appeal.
+    </p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+     We encourage you to use the platform responsibly and in line with our community guidelines.
+    </p>
+    <p style="font-size: 16px; margin-top: 20px; color: #333;">Regards,</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YatiCare Audit & Compliance Team<br>
+      Empowering Connections, Elevating Financial Growth.</p>`;
+  return baseEmailTemplate("Account Unblocked", mainContent);
+};
 
 exports.userUnblockedEmail = (userData) => {
   const mainContent = `
