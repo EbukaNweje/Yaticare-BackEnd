@@ -477,7 +477,7 @@ exports.userBlockedEmail = (userData) => {
 };
 exports.userUnBlockedEmail = (userData) => {
   const mainContent = `
-    <h1 style="font-size: 24px; color: ${ALERT_RED}; margin-bottom: 20px;">Account Suspension Notice</h1>
+    <h1 style="font-size: 24px; color: ${ALERT_RED}; margin-bottom: 20px;">Account Reinstated</h1>
     <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Dear ${userData.userName},</p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
       Your YatiCare account has been reinstated following a review of your appeal.
@@ -491,19 +491,6 @@ exports.userUnBlockedEmail = (userData) => {
     <p style="font-size: 16px; margin-top: 20px; color: #333;">Regards,</p>
     <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YatiCare Audit & Compliance Team<br>
       Empowering Connections, Elevating Financial Growth.</p>`;
-  return baseEmailTemplate("Account Unblocked", mainContent);
-};
-
-exports.userUnblockedEmail = (userData) => {
-  const mainContent = `
-    <h1 style="font-size: 24px; color: ${SUCCESS_GREEN}; margin-bottom: 20px;">Account Unblocked</h1>
-    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
-    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
-      Your YATiCare account has been unblocked by an administrator. You now have full access to your account and services.
-    </p>
-    <p style="font-size: 16px; margin-top: 20px; color: #333;">Welcome back!</p>
-    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
-  `;
   return baseEmailTemplate("Account Unblocked", mainContent);
 };
 
