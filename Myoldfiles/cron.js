@@ -6,7 +6,7 @@ const { sendEmail } = require("./brevo");
 const cron = require("node-cron");
 const moment = require("moment");
 
-cron.schedule("0 8 * * *", async () => {
+cron.schedule("5 8 * * *", async () => {
   console.log("\n=== DAILY INTEREST CRON START ===");
   console.log("Server Time:", new Date().toLocaleString());
   console.log("Timezone:", Intl.DateTimeFormat().resolvedOptions().timeZone);

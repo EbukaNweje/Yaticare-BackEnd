@@ -456,14 +456,23 @@ exports.adminPasswordUpdateEmail = (userData) => {
 
 exports.userBlockedEmail = (userData) => {
   const mainContent = `
-    <h1 style="font-size: 24px; color: ${ALERT_RED}; margin-bottom: 20px;">Account Blocked</h1>
-    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
+    <h1 style="font-size: 24px; color: ${ALERT_RED}; margin-bottom: 20px;">Account Suspension Notice</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Dear ${userData.userName},</p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
-      Your YATiCare account has been blocked by an administrator.
+      Your YatiCare account has been suspended due to suspected malicious activities (e.g., manipulation of daily returns, irregular subscriptions, or policy and terms of use violations).
     </p>
-    <p style="font-size: 16px; margin-top: 20px; color: #333;">Regards,</p>
-    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
-  `;
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+     You may appeal this decision by sending a written Letter of Appeal to yatihelpdesk@gmail.com within 72 hours. If no appeal is received, the suspension will become permanent.
+    </p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+     Please note that this suspension is a precautionary measure to protect the fairness and security of our community.
+    </p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+       We appreciate your understanding and cooperation.
+    </p>
+    <p style="font-size: 16px; margin-top: 20px; color: #333;">Sincerely,</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YatiCare Audit & Compliance Team<br>
+      Empowering Connections, Elevating Financial Growth.</p>`;
   return baseEmailTemplate("Account Blocked", mainContent);
 };
 

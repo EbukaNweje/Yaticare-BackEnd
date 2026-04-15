@@ -26,7 +26,7 @@ function isDateDue(targetDate, currentDate) {
 }
 
 // Run every day at 08:00 server time
-cron.schedule("21 8 * * *", async () => {
+cron.schedule("6 8 * * *", async () => {
   console.log("\n=== DAILY INTEREST CRON START ===");
   console.log("Server Time:", new Date().toLocaleString());
   console.log("UTC Time:", new Date().toISOString());
@@ -146,29 +146,29 @@ cron.schedule("21 8 * * *", async () => {
               await subscription.save();
 
               // Send reminder email (user must recycle on day 6 to receive day 7)
-              if (!subscription.isSubscriptionRecycle) {
-                subscription.isSubscriptionRecycle = true;
-                await subscription.save();
+              // if (!subscription.isSubscriptionRecycle) {
+              //   subscription.isSubscriptionRecycle = true;
+              //   await subscription.save();
 
-                try {
-                  await sendEmail({
-                    email: user.email,
-                    subject:
-                      "Action required: Recycle to receive final day interest",
-                    html: contributionCycleStartsEmail(user, subscription),
-                  });
+              //   try {
+              //     await sendEmail({
+              //       email: user.email,
+              //       subject:
+              //         "Action required: Recycle to receive final day interest",
+              //       html: contributionCycleStartsEmail(user, subscription),
+              //     });
 
-                  await AuditLog.create({
-                    type: "REMINDER",
-                    user: user._id,
-                    subscription: subscription._id,
-                    message: "Sent recycle reminder (day6).",
-                  });
-                  console.log("📧 Reminder sent to:", user.email);
-                } catch (emailError) {
-                  console.log("❌ Email send failed:", emailError.message);
-                }
-              }
+              //     await AuditLog.create({
+              //       type: "REMINDER",
+              //       user: user._id,
+              //       subscription: subscription._id,
+              //       message: "Sent recycle reminder (day6).",
+              //     });
+              //     console.log("📧 Reminder sent to:", user.email);
+              //   } catch (emailError) {
+              //     console.log("❌ Email send failed:", emailError.message);
+              //   }
+              // }
             }
           } else {
             console.log("⏳ Not due yet for payment");
