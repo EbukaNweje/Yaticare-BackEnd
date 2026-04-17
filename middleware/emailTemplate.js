@@ -293,6 +293,19 @@ exports.withdrawalCompletedEmail = (userData, withdrawal) => {
   return baseEmailTemplate("Withdrawal Completed", mainContent);
 };
 
+exports.withdrawalReversedEmail = (userData, withdrawal) => {
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Withdrawal Reversed</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      Your withdrawal request has been reversed and <strong>$${withdrawal.amountCharges}</strong> has been returned to your YATiCare account balance. If you have questions, please contact support.
+    </p>
+    <p style="font-size: 16px; margin-top: 20px; color: #333;">Regards,</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">YATiCare Team.</p>
+  `;
+  return baseEmailTemplate("Withdrawal Reversed", mainContent);
+};
+
 exports.contributionCycleStartsEmail = (userData, subscription) => {
   const mainContent = `
     <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Your Contribution Cycle Starts Soon</h1>

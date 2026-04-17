@@ -17,6 +17,11 @@ router.put(
   SuperAdminAuth,
   Admin.approveWithdrawal,
 );
+router.put(
+  "/reversewithdrawal/:withdrawalId",
+  SuperAdminAuth,
+  Admin.reverseWithdrawal,
+);
 router.put("/updateuseremail/:id", SuperAdminAuth, Admin.updateUserEmail);
 router.patch(
   "/changeuserpassword/:id",

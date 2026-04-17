@@ -11,6 +11,7 @@ const Subscription = require("../models/Subscription");
 const {
   depositCompletedEmail,
   withdrawalCompletedEmail,
+  withdrawalReversedEmail,
   adminPasswordUpdateEmail,
   userBlockedEmail,
   userUnBlockedEmail,
@@ -201,6 +202,65 @@ exports.approveWithdrawal = async (req, res, next) => {
     });
   } catch (error) {
     console.error("Error approving withdrawal:", error.message);
+    next(error);
+  }
+};
+
+exports.reverseWithdrawal = async (req, res, next) => {
+  try {
+    const { withdrawalId } = req.params;
+
+    const withdrawal = await Withdrawal.findById(withdrawalId).populate("user");
+    if (!withdrawal) {
+      return res.status(404).json({ message: "Withdrawal not found" });
+    }
+
+    if (withdrawal.status === "rejected") {
+      return res
+        .status(400)
+        .json({ message: "Withdrawal has already been reversed" });
+    }
+
+    const refundAmount = withdrawal.amountCharges || withdrawal.amount || 0;
+    const user = await User.findById(withdrawal.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.accountBalance = (user.accountBalance || 0) + refundAmount;
+    if (withdrawal.status === "approved") {
+      user.userTransactionTotal.withdrawalTotal = Math.max(
+        0,
+        (user.userTransactionTotal.withdrawalTotal || 0) - refundAmount,
+      );
+    }
+    await user.save();
+
+    withdrawal.status = "rejected";
+    withdrawal.processedAt = new Date();
+    await withdrawal.save();
+
+    const history = new historyModel({
+      userId: user._id,
+      transactionType: "Withdrawal Reversed",
+      amount: refundAmount,
+      desc: `Withdrawal reversed and $${refundAmount} refunded to account`,
+    });
+    await history.save();
+
+    const emailDetails = {
+      email: user.email,
+      subject: "Withdrawal Reversed",
+      html: withdrawalReversedEmail(user, withdrawal),
+    };
+    sendEmail(emailDetails);
+
+    res.status(200).json({
+      message: "Withdrawal reversed successfully",
+      withdrawal,
+    });
+  } catch (error) {
+    console.error("Error reversing withdrawal:", error.message);
     next(error);
   }
 };
