@@ -49,12 +49,10 @@ exports.createSubscription = async (req, res) => {
       status: "active",
     });
     if (activeSubscription) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "You already have an active subscription. You can create a new one only after it expires.",
-        });
+      return res.status(400).json({
+        message:
+          "You already have an active subscription. You can create a new one only after it expires.",
+      });
     }
 
     const selectedPlan = await Plan.findOne({ planName: planName });
@@ -128,6 +126,7 @@ exports.createSubscription = async (req, res) => {
       daysPaid: 0,
       durationInDays,
       status: "active",
+      isSubscriptionRecycle: true, // ✅ Can be recycled
     });
 
     // Referral bonus
