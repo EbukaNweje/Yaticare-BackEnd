@@ -44,16 +44,16 @@ exports.createSubscription = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
 
     // Check for active subscription
-    const activeSubscription = await Subscription.findOne({
-      user: userId,
-      status: "active",
-    });
-    if (activeSubscription) {
-      return res.status(400).json({
-        message:
-          "You already have an active subscription. You can create a new one only after it expires.",
-      });
-    }
+    // const activeSubscription = await Subscription.findOne({
+    //   user: userId,
+    //   status: "active",
+    // });
+    // if (activeSubscription) {
+    //   return res.status(400).json({
+    //     message:
+    //       "You already have an active subscription. You can create a new one only after it expires.",
+    //   });
+    // }
 
     const selectedPlan = await Plan.findOne({ planName: planName });
     if (!selectedPlan) {
@@ -220,11 +220,11 @@ exports.recycleSubscription = async (req, res) => {
     const now = new Date();
 
     // Prevent recycling expired subscriptions after 2 days
-    if (now > addDays(subscription.endDate, 2)) {
-      return res
-        .status(400)
-        .json({ message: "Cannot recycle an expired subscription." });
-    }
+    // if (now > addDays(subscription.endDate, 2)) {
+    //   return res
+    //     .status(400)
+    //     .json({ message: "Cannot recycle an expired subscription." });
+    // }
 
     /** --------------------------------
      *  Recycle eligibility
