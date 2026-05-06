@@ -219,12 +219,12 @@ exports.recycleSubscription = async (req, res) => {
 
     const now = new Date();
 
-    // Prevent recycling expired subscriptions after 2 days
-    // if (now > addDays(subscription.endDate, 2)) {
-    //   return res
-    //     .status(400)
-    //     .json({ message: "Cannot recycle an expired subscription." });
-    // }
+    // Prevent recycling expired subscriptions after 1 days
+    if (now > addDays(subscription.endDate, 1)) {
+      return res
+        .status(400)
+        .json({ message: "Cannot recycle an expired subscription." });
+    }
 
     /** --------------------------------
      *  Recycle eligibility
