@@ -35,8 +35,11 @@ const createWithdrawal = async (req, res) => {
       return res.status(401).json({ error: "Invalid PIN" });
     }
 
-    // Check if the user has any subscriptions
-    const userSubscriptions = await Subscription.find({ user: userId });
+    // Check if the user has any active subscriptions
+    const userSubscriptions = await Subscription.find({
+      user: userId,
+      status: "active",
+    });
     if (userSubscriptions.length === 0) {
       return res.status(400).json({
         error: "You must have an active subscription to withdraw.",
