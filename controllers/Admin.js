@@ -308,18 +308,14 @@ exports.deleteWithdrawal = async (req, res, next) => {
 
 exports.createGiftOption = async (req, res, next) => {
   try {
-    const { title, amount, description } = req.body;
+    const { title } = req.body;
 
-    if (!title || amount == null) {
-      return res
-        .status(400)
-        .json({ message: "Gift title and amount are required" });
+    if (!title) {
+      return res.status(400).json({ message: "Gift title is required" });
     }
 
     const giftOption = new GiftOption({
       title,
-      amount: Number(amount),
-      description: description || "",
       createdBy: req.admin?.id,
     });
 
