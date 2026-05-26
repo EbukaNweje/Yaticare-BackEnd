@@ -375,7 +375,6 @@ exports.giftUser = async (req, res, next) => {
       if (!giftOption) {
         return res.status(404).json({ message: "Gift option not found" });
       }
-      giftAmount = giftAmount || giftOption.amount;
       giftReason = reason || `Gift: ${giftOption.title}`;
     }
 
