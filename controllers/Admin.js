@@ -1,5 +1,7 @@
 const User = require("../models/User");
 const Admin = require("../models/Admin");
+const Bonus = require("../models/Bonus");
+const GiftOption = require("../models/GiftOption");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const depositModel = require("../models/Deposit");
@@ -299,6 +301,121 @@ exports.deleteWithdrawal = async (req, res, next) => {
       return res.status(404).json({ message: "Withdrawal not found" });
     }
     res.status(200).json({ message: "Withdrawal deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.createGiftOption = async (req, res, next) => {
+  try {
+    const { title, amount, description } = req.body;
+
+    if (!title || amount == null) {
+      return res
+        .status(400)
+        .json({ message: "Gift title and amount are required" });
+    }
+
+    const giftOption = new GiftOption({
+      title,
+      amount: Number(amount),
+      description: description || "",
+      createdBy: req.admin?.id,
+    });
+
+    await giftOption.save();
+
+    res.status(201).json({
+      message: "Gift option created successfully",
+      data: giftOption,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getGiftOptions = async (req, res, next) => {
+  try {
+    const giftOptions = await GiftOption.find().sort({ createdAt: -1 });
+    res.status(200).json({
+      message: "Gift options retrieved successfully",
+      data: giftOptions,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.deleteGiftOption = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const giftOption = await GiftOption.findByIdAndDelete(id);
+    if (!giftOption) {
+      return res.status(404).json({ message: "Gift option not found" });
+    }
+    res.status(200).json({ message: "Gift option deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.giftUser = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const { amount, giftOptionId, reason } = req.body;
+
+    if (!amount && !giftOptionId) {
+      return res.status(400).json({
+        message: "Provide either amount or giftOptionId to gift a user",
+      });
+    }
+
+    let giftAmount = amount ? Number(amount) : null;
+    let giftReason = reason || "Gift from admin";
+    let giftOption = null;
+
+    if (giftOptionId) {
+      giftOption = await GiftOption.findById(giftOptionId);
+      if (!giftOption) {
+        return res.status(404).json({ message: "Gift option not found" });
+      }
+      giftAmount = giftAmount || giftOption.amount;
+      giftReason = reason || `Gift: ${giftOption.title}`;
+    }
+
+    if (!giftAmount || giftAmount <= 0) {
+      return res
+        .status(400)
+        .json({ message: "Gift amount must be greater than 0" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const bonus = new Bonus({
+      user: user._id,
+      amount: giftAmount,
+      reason: giftReason,
+      date: new Date().toISOString(),
+    });
+
+    user.accountBalance = (user.accountBalance || 0) + giftAmount;
+    user.userTransactionTotal = user.userTransactionTotal || {};
+    user.userTransactionTotal.bonusHistoryTotal =
+      (user.userTransactionTotal.bonusHistoryTotal || 0) + giftAmount;
+    user.userTransaction = user.userTransaction || {};
+    user.userTransaction.bonusHistory = user.userTransaction.bonusHistory || [];
+    user.userTransaction.bonusHistory.push(bonus._id);
+
+    await bonus.save();
+    await user.save();
+
+    res.status(200).json({
+      message: "Emolument gifted successfully",
+      data: { user, bonus, giftOption },
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

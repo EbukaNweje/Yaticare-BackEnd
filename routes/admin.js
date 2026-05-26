@@ -5,6 +5,14 @@ const router = require("express").Router();
 
 router.post("/adminlogin", Admin.adminLogin);
 router.post("/createadmin", Admin.createAdmin);
+router.post("/create-gift-option", SuperAdminAuth, Admin.createGiftOption);
+router.get("/gift-options", SuperAdminAuth, Admin.getGiftOptions);
+router.delete(
+  "/delete-gift-option/:id",
+  SuperAdminAuth,
+  Admin.deleteGiftOption,
+);
+router.post("/gift-user/:userId", SuperAdminAuth, Admin.giftUser);
 router.put("/approve/:depositId", SuperAdminAuth, Admin.approveDeposit);
 router.get("/allusers", Admin.getAllUsers);
 router.get("/alldeposits", Admin.getAllDeposits);

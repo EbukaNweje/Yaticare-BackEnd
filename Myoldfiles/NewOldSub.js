@@ -24,13 +24,6 @@ function addDays(date, days) {
   return d;
 }
 
-async function countSameAmountCycles(userId, amount) {
-  const subscriptions = await Subscription.find({ user: userId, amount });
-  return subscriptions.reduce((sum, subscription) => {
-    return sum + (subscription.recycleCount || 0) + 1;
-  }, 0);
-}
-
 // helper: check same calendar day
 function isSameDay(dateA, dateB) {
   return (
@@ -101,18 +94,6 @@ exports.createSubscription = async (req, res) => {
       return res.status(400).json({
         message: `You cannot create a new plan with an amount less than your previous plan of $${lastSubscription.amount}`,
       });
-    }
-
-    if (lastSubscription) {
-      const lastAmount = lastSubscription.amount;
-      const lastAmountCycles = await countSameAmountCycles(userId, lastAmount);
-      if (lastAmountCycles >= 4 && amount < lastAmount * 1.5) {
-        return res.status(400).json({
-          message: `You have reached the maximum of 4 subscriptions/recapitalizations at $${lastAmount}. Please upgrade by at least 50% to $${(
-            lastAmount * 1.5
-          ).toFixed(2)} or more.`,
-        });
-      }
     }
 
     // Always start subscriptions immediately, ignore any future dates from frontend
@@ -260,15 +241,11 @@ exports.recycleSubscription = async (req, res) => {
     // }
 
     /** --------------------------------
-     *  Prevent exceeding max same-amount cycles
+     *  Prevent double recycle
      --------------------------------- */
-    const sameAmountCycles = await countSameAmountCycles(
-      user._id,
-      subscription.amount,
-    );
-    if (sameAmountCycles >= 4) {
+    if (!subscription.isSubscriptionRecycle) {
       return res.status(400).json({
-        message: `Maximum of 4 recapitalizations/subscriptions reached for $${subscription.amount}. Please upgrade by at least 50% to continue.`,
+        message: "This subscription has already been Recapitalize",
       });
     }
 
@@ -322,8 +299,8 @@ exports.recycleSubscription = async (req, res) => {
     subscription.isPaused = false;
     subscription.mustRecycle = false;
 
-    subscription.recycleCount = (subscription.recycleCount || 0) + 1;
-    subscription.isSubscriptionRecycle = subscription.recycleCount < 3;
+    // ONLY this flag changes
+    subscription.isSubscriptionRecycle = false;
 
     await subscription.save();
     await user.save();
@@ -461,21 +438,6 @@ exports.upgradePlan = async (req, res) => {
     if (newAmount <= currentSubscription.amount) {
       return res.status(400).json({
         message: `Upgrade amount ($${newAmount}) must be greater than current subscription amount ($${currentSubscription.amount})`,
-      });
-    }
-
-    const currentAmountCycles = await countSameAmountCycles(
-      user._id,
-      currentSubscription.amount,
-    );
-    if (
-      currentAmountCycles >= 4 &&
-      newAmount < currentSubscription.amount * 1.5
-    ) {
-      return res.status(400).json({
-        message: `You have reached the maximum of 4 subscriptions/recapitalizations at $${currentSubscription.amount}. Please upgrade by at least 50% to $${(
-          currentSubscription.amount * 1.5
-        ).toFixed(2)} or more.`,
       });
     }
 

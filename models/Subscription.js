@@ -28,12 +28,13 @@ const SubscriptionSchema = new mongoose.Schema(
 
     // Optional: keep original duration so recycle can reuse it
     durationInDays: { type: Number, required: true },
+    recycleCount: { type: Number, default: 0 },
 
     // For human-readable dates if you want
     subscriptionDate: { type: Date, default: Date.now },
     showDate: { type: String, default: "" },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("Subscription", SubscriptionSchema);
