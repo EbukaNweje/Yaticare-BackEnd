@@ -407,6 +407,27 @@ exports.giftUser = async (req, res, next) => {
     await bonus.save();
     await user.save();
 
+    // Send email to user notifying them of the gift (amount and reason)
+    try {
+      const {
+        adminCustomMessageEmail,
+      } = require("../middleware/emailTemplate");
+      const emailDetails = {
+        email: user.email,
+        subject: "You've received a gift",
+        html: adminCustomMessageEmail(
+          user,
+          `You have received a gift of $${giftAmount.toFixed(2)}. Reason: ${giftReason}`,
+        ),
+      };
+
+      // sendEmail is imported at top of this file
+      sendEmail(emailDetails);
+    } catch (e) {
+      // Log and continue — gifting should not fail because of email issues
+      console.error("Failed to send gift email:", e.message || e);
+    }
+
     res.status(200).json({
       message: "Emolument gifted successfully",
       data: { user, bonus, giftOption },
