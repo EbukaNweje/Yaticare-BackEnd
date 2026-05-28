@@ -53,13 +53,6 @@ cron.schedule("0 8 * * *", async () => {
           continue;
         }
 
-        if (user.status === "blocked") {
-          console.log(
-            `🚫 Skipping blocked user ${user.email} for subscription ${subscription._id}`,
-          );
-          continue;
-        }
-
         const now = new Date();
         console.log(`\n--- Processing ${user.email} (${subscription._id}) ---`);
         console.log(

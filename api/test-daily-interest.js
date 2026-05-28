@@ -34,6 +34,16 @@ exports.testDailyInterest = async (req, res) => {
           continue;
         }
 
+        if (user.status === "blocked") {
+          results.push({
+            subscriptionId: subscription._id,
+            userEmail: user.email,
+            status: user.status,
+            action: "Blocked user - no interest",
+          });
+          continue;
+        }
+
         const now = new Date();
         const subscriptionInfo = {
           subscriptionId: subscription._id,
