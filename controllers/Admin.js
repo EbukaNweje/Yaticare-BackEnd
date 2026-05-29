@@ -424,7 +424,8 @@ exports.giftUser = async (req, res, next) => {
       // sendEmail is imported at top of this file
       sendEmail(emailDetails);
     } catch (e) {
-      // Log and continue — gifting should not fail because of email issues
+      // Log and continue — gift
+      // ing should not fail because of email issues
       console.error("Failed to send gift email:", e.message || e);
     }
 

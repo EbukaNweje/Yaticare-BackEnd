@@ -50,6 +50,17 @@ exports.createSubscription = async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
+    if (user.status === "blocked") {
+      return res.status(403).json({
+        message: "Your account is blocked. Please contact support.",
+      });
+    }
+
+    const requestedAmount = Number(amount);
+    if (!Number.isFinite(requestedAmount) || requestedAmount <= 0) {
+      return res.status(400).json({ message: "Invalid subscription amount" });
+    }
+
     // Check for active subscription
     // const activeSubscription = await Subscription.findOne({
     //   user: userId,
@@ -67,27 +78,27 @@ exports.createSubscription = async (req, res) => {
       return res.status(404).json({ message: "Plan not found" });
     }
 
-    if (user.accountBalance < amount)
+    if (user.accountBalance < requestedAmount)
       return res.status(400).json({ message: "Insufficient balance" });
     // ✅ Get user's most recent subscription
 
     // ❌ Max subscription limit
     const MAX_SUBSCRIPTION_AMOUNT = 10000;
 
-    if (amount > MAX_SUBSCRIPTION_AMOUNT) {
+    if (requestedAmount > MAX_SUBSCRIPTION_AMOUNT) {
       return res.status(400).json({
         message: `Maximum subscription amount is $${MAX_SUBSCRIPTION_AMOUNT}`,
       });
     }
 
     // Plan-specific max limit
-    if (amount > selectedPlan.maximumDeposit) {
+    if (requestedAmount > selectedPlan.maximumDeposit) {
       return res.status(400).json({
         message: `Amount exceeds the maximum allowed for ${planName}. Max is $${selectedPlan.maximumDeposit}`,
       });
     }
 
-    if (amount < selectedPlan.minimumDeposit) {
+    if (requestedAmount < selectedPlan.minimumDeposit) {
       return res.status(400).json({
         message: `Minimum deposit for ${planName} plan is $${selectedPlan.minimumDeposit}`,
       });
@@ -97,7 +108,7 @@ exports.createSubscription = async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
-    if (lastSubscription && amount < lastSubscription.amount) {
+    if (lastSubscription && requestedAmount < lastSubscription.amount) {
       return res.status(400).json({
         message: `You cannot create a new plan with an amount less than your previous plan of $${lastSubscription.amount}`,
       });
@@ -105,12 +116,14 @@ exports.createSubscription = async (req, res) => {
 
     if (lastSubscription) {
       const lastAmount = lastSubscription.amount;
-      const lastAmountCycles = await countSameAmountCycles(userId, lastAmount);
-      if (lastAmountCycles >= 4 && amount < lastAmount * 1.5) {
+      const sameAmountCycles = await countSameAmountCycles(userId, lastAmount);
+      const minimumUpgradeAmount = lastAmount * 1.5;
+
+      if (sameAmountCycles >= 4 && requestedAmount < minimumUpgradeAmount) {
         return res.status(400).json({
-          message: `You have reached the maximum of 4 subscriptions/recapitalizations at $${lastAmount}. Please upgrade by at least 50% to $${(
-            lastAmount * 1.5
-          ).toFixed(2)} or more.`,
+          message: `You have reached the maximum of 4 subscriptions/recapitalizations at $${lastAmount}. Please upgrade by at least 50% to $${minimumUpgradeAmount.toFixed(
+            2,
+          )} or more.`,
         });
       }
     }
@@ -130,13 +143,13 @@ exports.createSubscription = async (req, res) => {
     const endDate = addDays(startDate, durationInDays);
 
     // Deduct subscription amount
-    user.accountBalance -= amount;
+    user.accountBalance -= requestedAmount;
 
     // Create subscription
     const newSubscription = new Subscription({
       user: userId,
       plan,
-      amount,
+      amount: requestedAmount,
       startDate,
       endDate,
       subscriptionDate: startDate,
@@ -156,7 +169,7 @@ exports.createSubscription = async (req, res) => {
     const isFirstSubscription = !lastSub;
     if (referrer) {
       const bonusRate = isFirstSubscription ? 0.15 : 0.005;
-      const bonusAmount = amount * bonusRate;
+      const bonusAmount = requestedAmount * bonusRate;
 
       referrer.accountBalance += bonusAmount;
       referrer.inviteCode.bonusAmount =
@@ -209,7 +222,7 @@ exports.createSubscription = async (req, res) => {
       type: "CREATE_SUBSCRIPTION",
       user: user._id,
       subscription: newSubscription._id,
-      message: `Subscription created for ${amount} for ${durationInDays} days.`,
+      message: `Subscription created for ${requestedAmount} for ${durationInDays} days.`,
     });
 
     res.status(201).json({
