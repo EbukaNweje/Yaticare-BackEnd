@@ -48,10 +48,10 @@ const createWithdrawal = async (req, res) => {
 
     if (amount > user.accountBalance)
       return res.status(404).json({ error: "Insufficient balance" });
-    if (amount < 20)
+    if (amount < 40)
       return res
         .status(404)
-        .json({ error: "Minimum withdrawal amount is $20.00" });
+        .json({ error: "Minimum withdrawal amount is $40.00" });
 
     if (!user.pin) {
       return res.status(400).json({ error: "Transaction PIN not set" });
