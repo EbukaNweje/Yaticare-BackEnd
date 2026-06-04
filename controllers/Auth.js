@@ -86,30 +86,30 @@ exports.register = async (req, res, next) => {
     await newUser.save();
 
     // Credit Welcome Bonus ($5) and record bonus history
-    try {
-      const welcomeAmount = 5;
-      const bonus = new Bonus({
-        user: newUser._id,
-        amount: welcomeAmount,
-        reason: "Welcome Bonus",
-        date: new Date().toISOString(),
-      });
+    // try {
+    //   const welcomeAmount = 5;
+    //   const bonus = new Bonus({
+    //     user: newUser._id,
+    //     amount: welcomeAmount,
+    //     reason: "Welcome Bonus",
+    //     date: new Date().toISOString(),
+    //   });
 
-      // Ensure numeric fields exist
-      newUser.accountBalance = (newUser.accountBalance || 0) + welcomeAmount;
-      newUser.userTransactionTotal = newUser.userTransactionTotal || {};
-      newUser.userTransactionTotal.bonusHistoryTotal =
-        (newUser.userTransactionTotal.bonusHistoryTotal || 0) + welcomeAmount;
-      newUser.userTransaction = newUser.userTransaction || {};
-      newUser.userTransaction.bonusHistory =
-        newUser.userTransaction.bonusHistory || [];
-      newUser.userTransaction.bonusHistory.push(bonus._id);
+    //   // Ensure numeric fields exist
+    //   newUser.accountBalance = (newUser.accountBalance || 0) + welcomeAmount;
+    //   newUser.userTransactionTotal = newUser.userTransactionTotal || {};
+    //   newUser.userTransactionTotal.bonusHistoryTotal =
+    //     (newUser.userTransactionTotal.bonusHistoryTotal || 0) + welcomeAmount;
+    //   newUser.userTransaction = newUser.userTransaction || {};
+    //   newUser.userTransaction.bonusHistory =
+    //     newUser.userTransaction.bonusHistory || [];
+    //   newUser.userTransaction.bonusHistory.push(bonus._id);
 
-      await bonus.save();
-      await newUser.save();
-    } catch (e) {
-      console.error("Failed to apply welcome bonus:", e.message || e);
-    }
+    //   await bonus.save();
+    //   await newUser.save();
+    // } catch (e) {
+    //   console.error("Failed to apply welcome bonus:", e.message || e);
+    // }
 
     // Generate Referral Link
     const referralLink = `https://www.yaticare.com/auth/Sign-up?referralCode=${newUser.inviteCode.code}`;
