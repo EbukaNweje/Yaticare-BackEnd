@@ -472,10 +472,10 @@ exports.userBlockedEmail = (userData) => {
     <h1 style="font-size: 24px; color: ${ALERT_RED}; margin-bottom: 20px;">Account Suspension Notice</h1>
     <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Dear ${userData.userName},</p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
-      Your YatiCare account has been suspended due to suspected malicious activities (e.g., manipulation of daily returns, irregular subscriptions, or policy and terms of use violations).
+      Your YatiCare account has been suspended due to suspected malicious activities (e.g., Manipulation of daily returns, irregular subscriptions, Multiple Account, or policy and terms  of use violations.).
     </p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
-     You may appeal this decision by sending a written Letter of Appeal to yatihelpdesk@gmail.com within 72 hours. If no appeal is received, the suspension will become permanent.
+     You may appeal this decision by sending a written Letter of Appeal to Admin on Telegram within 72 hours. If no appeal is received, the suspension will become permanent.
     </p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
      Please note that this suspension is a precautionary measure to protect the fairness and security of our community.
