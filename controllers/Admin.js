@@ -99,6 +99,7 @@ exports.approveDeposit = async (req, res, next) => {
     const user = await User.findById(deposit.user._id);
     user.accountBalance = (user.accountBalance || 0) + Number(deposit.amount);
     user.userTransactionTotal.depositHistoryTotal += Number(deposit.amount);
+    user.userTransactionTotal.depositTotal += Number(deposit.amount);
     await user.save();
 
     // Log to history
