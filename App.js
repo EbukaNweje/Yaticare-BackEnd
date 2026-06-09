@@ -10,6 +10,7 @@ const withdrawalRoutes = require("./routes/withdrawal");
 const subscriptions = require("./routes/Subscription");
 const admin = require("./routes/admin");
 const contactUsRoutes = require("./routes/contactUs");
+const chatRoutes = require("./routes/chat");
 const morgan = require("morgan");
 const fileUploader = require("express-fileupload");
 const bodyParser = require("body-parser");
@@ -38,6 +39,7 @@ app.use("/api", planRouter);
 app.use("/api", subscriptions);
 app.use("/api/admin", admin);
 app.use("/api/contactus", contactUsRoutes);
+app.use("/api/chat", chatRoutes);
 
 app.use("/", (req, res, next) => {
   res.status(200).send("Server is running");

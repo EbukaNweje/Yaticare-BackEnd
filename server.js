@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const http = require("http");
 const dotenv = require("dotenv");
 dotenv.config({ path: "./config/index.env" });
 const Db = process.env.DATABASE;
@@ -26,9 +27,13 @@ mongoose
   });
 
 const app = require("./App");
+const { registerChatSocket } = require("./utilities/chatSocket");
 // console.log(new Date().toLocaleString());
 // console.log(new Date().toISOString());
 
-app.listen(process.env.PORT || 5000, () => {
-  console.log(`Server is running on port ${process.env.PORT}`);
+const server = http.createServer(app);
+registerChatSocket(server);
+
+server.listen(process.env.PORT || 5000, () => {
+  console.log(`Server is running on port ${process.env.PORT || 5000}`);
 });
