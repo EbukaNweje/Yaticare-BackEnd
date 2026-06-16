@@ -5,6 +5,7 @@ const router = require("express").Router();
 
 router.post("/adminlogin", Admin.adminLogin);
 router.post("/createadmin", Admin.createAdmin);
+router.get("/getadmin/:id", Admin.getOneAdmin);
 router.post("/create-gift-option", SuperAdminAuth, Admin.createGiftOption);
 router.get("/gift-options", SuperAdminAuth, Admin.getGiftOptions);
 router.delete(

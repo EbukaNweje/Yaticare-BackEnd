@@ -66,6 +66,21 @@ exports.adminLogin = async (req, res, next) => {
   }
 };
 
+exports.getOneAdmin = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const admin = await Admin.findById(id).select("-password");
+    if (!admin) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+    res
+      .status(200)
+      .json({ message: "Admin retrieved successfully", data: admin });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 exports.getAllUsers = async (req, res, next) => {
   try {
     const users = await User.find().select("-password -pin");
