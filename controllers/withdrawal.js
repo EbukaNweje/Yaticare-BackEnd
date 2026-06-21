@@ -58,33 +58,6 @@ const createWithdrawal = async (req, res) => {
       return res.status(400).json({ error: "Transaction PIN not set" });
     }
 
-    // Check withdrawal limit based on total confirmed deposits vs total approved withdrawals
-    const hasReferrals = user.referralCount > 0;
-    const withdrawalMultiplier = hasReferrals ? 4 : 2;
-
-    // Sum all confirmed deposits for this user
-    const depositAggregation = await Deposit.aggregate([
-      { $match: { user: user._id, status: "confirmed" } },
-      { $group: { _id: null, total: { $sum: "$amount" } } },
-    ]);
-    const totalDeposited = depositAggregation[0]?.total || 0;
-
-    // Sum all approved withdrawals (amountCharges = original amount before fee)
-    const withdrawalAggregation = await Withdrawal.aggregate([
-      { $match: { user: user._id, status: "approved" } },
-      { $group: { _id: null, total: { $sum: "$amountCharges" } } },
-    ]);
-    const totalWithdrawn = withdrawalAggregation[0]?.total || 0;
-
-    const withdrawalLimit = totalDeposited * withdrawalMultiplier;
-
-    if (totalWithdrawn + amount > withdrawalLimit) {
-      const limitMsg = hasReferrals
-        ? "You have reached the 4× withdrawal limit on your deposits. Please make a new deposit to continue withdrawing."
-        : "You have reached the 2× withdrawal limit on your deposits. Please make a new deposit to continue withdrawing. Tip: refer friends to unlock a higher withdrawal limit.";
-      return res.status(400).json({ error: limitMsg });
-    }
-
     // Deduct 15% fee from the withdrawal amount
     const fee = amount * 0.15;
     const amountAfterFee = amount - fee;
