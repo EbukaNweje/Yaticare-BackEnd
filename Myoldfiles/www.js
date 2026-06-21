@@ -1,0 +1,111 @@
+const createWithdrawal = async (req, res) => {
+  try {
+    const {
+      userId,
+      amount,
+      method,
+      walletAddress,
+      withdrawalDate,
+      accountName,
+      pin,
+    } = req.body;
+
+    if (!userId || !amount || !method || !pin) {
+      return res
+        .status(400)
+        .json({ error: "User ID, amount, method, and PIN are required" });
+    }
+
+    // Get user
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    // Compare pin
+    const isMatch = await bcrypt.compare(pin, user.pin);
+    if (!isMatch) {
+      return res.status(401).json({ error: "Invalid PIN" });
+    }
+
+    // Check if the user has any active subscriptions
+    const userSubscriptions = await Subscription.find({
+      user: userId,
+      status: "active",
+    });
+    if (userSubscriptions.length === 0) {
+      return res.status(400).json({
+        error: "You must have an active subscription to withdraw.",
+      });
+    }
+
+    if (amount > user.accountBalance)
+      return res.status(404).json({ error: "Insufficient balance" });
+    if (amount < 30)
+      return res
+        .status(404)
+        .json({ error: "Minimum withdrawal amount is $30.00" });
+
+    if (!user.pin) {
+      return res.status(400).json({ error: "Transaction PIN not set" });
+    }
+
+    // Deduct 15% fee from the withdrawal amount
+    const fee = amount * 0.15;
+    const amountAfterFee = amount - fee;
+
+    if (amount > user.accountBalance) {
+      return res.status(404).json({ error: "Insufficient balance" });
+    }
+
+    user.accountBalance -= amount; // Deduct the original amount from the account balance
+    await user.save();
+
+    // Create withdrawal
+    const withdrawals = new Withdrawal({
+      user: user._id,
+      amount: amountAfterFee,
+      amountCharges: amount,
+      method,
+      walletAddress,
+      accountName,
+      status: "pending",
+      withdrawalDate: withdrawalDate,
+      withdrawalDateChecked: new Date(),
+    });
+
+    // Push withdrawal into user.userTransaction.withdraw
+    user.userTransaction.withdrawal.push(withdrawals._id);
+    await user.save();
+
+    // Save history record
+    const history = new historyModel({
+      userId: user._id,
+      transactionType: "withdrawal",
+      amount,
+      to: walletAddress || accountName || method,
+      desc: `Withdrew $${amountAfterFee} via ${method} (Fee: $${fee})`,
+    });
+
+    await history.save();
+
+    await withdrawals.save();
+
+    // Set userTestimonial to true for the user
+    await User.findByIdAndUpdate(userId, { userTestimonial: true });
+
+    const emailDetails = {
+      email: user.email,
+      subject: "Withdrawal Request Initiated",
+      html: withdrawalRequestEmail(user),
+    };
+
+    sendEmail(emailDetails);
+
+    return res.status(201).json({
+      message: "Withdrawal request submitted successfully",
+      withdrawals,
+    });
+  } catch (err) {
+    console.error("Error creating withdrawal:", err.message);
+    res.status(500).json({ error: "Server error" });
+  }
+};

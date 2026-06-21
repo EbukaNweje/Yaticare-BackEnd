@@ -26,7 +26,7 @@ function isDateDue(targetDate, currentDate) {
 }
 
 // Run every day at 08:00 server time
-cron.schedule("4 10 * * *", async () => {
+cron.schedule("01 12 * * *", async () => {
   console.log("\n=== DAILY INTEREST CRON START ===");
   console.log("Server Time:", new Date().toLocaleString());
   console.log("UTC Time:", new Date().toISOString());
